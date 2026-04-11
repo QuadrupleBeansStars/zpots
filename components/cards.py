@@ -20,12 +20,12 @@ def court_card(court, key_prefix="court", show_book=True):
                 <span style="font-family:'Inter'; font-weight:600; font-size:14px; color:#272e42;">{court['name']}</span>
                 <span style="font-family:'Inter'; font-size:13px; color:#506300;">⭐ {court['rating']}</span>
             </div>
-            <div style="font-family:'Inter'; font-size:12px; color:#535b71; margin-top:4px;">📍 {court['location']}</div>
+            <div style="font-family:'Inter'; font-size:12px; color:#3d4455; margin-top:4px;">📍 {court['location']}</div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
                 <div>
-                    <span style="font-family:'Lexend'; font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:#535b71;">STARTS AT</span><br>
+                    <span style="font-family:'Lexend'; font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">STARTS AT</span><br>
                     <span style="font-family:'Space Grotesk'; font-weight:700; font-size:18px; color:#272e42;">฿{court['price_per_hour']}</span>
-                    <span style="font-family:'Inter'; font-size:11px; color:#535b71;">/hr</span>
+                    <span style="font-family:'Inter'; font-size:11px; color:#3d4455;">/hr</span>
                 </div>
             </div>
         </div>
@@ -33,7 +33,7 @@ def court_card(court, key_prefix="court", show_book=True):
     """, unsafe_allow_html=True)
 
     if show_book:
-        if st.button("Book Now", key=f"{key_prefix}_{court['id']}_book", type="primary", use_container_width=True):
+        if st.button("Book Now", key=f"{key_prefix}_{court['id']}_book", type="primary", width='stretch'):
             navigate("court_details", selected_court_id=court["id"])
 
 
@@ -75,8 +75,8 @@ def booking_card_player(booking, key_prefix="pbk"):
         <div style="flex:1;">
             <div style="font-family:'Inter'; font-weight:700; font-size:18px; color:#272e42;">{booking['court_name']}</div>
             <div style="display:flex; gap:1.5rem; margin-top:8px;">
-                <span style="font-family:'Inter'; font-size:13px; color:#535b71;">📅 {booking['date']}</span>
-                <span style="font-family:'Inter'; font-size:13px; color:#535b71;">🕐 {booking['time_start']} - {booking['time_end']}</span>
+                <span style="font-family:'Inter'; font-size:13px; color:#3d4455;">📅 {booking['date']}</span>
+                <span style="font-family:'Inter'; font-size:13px; color:#3d4455;">🕐 {booking['time_start']} - {booking['time_end']}</span>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px;">
                 <div>{team_html}</div>
@@ -98,10 +98,10 @@ def venue_card_owner(venue, key_prefix="ven"):
         </div>
         <div style="padding:1rem;">
             <div style="font-family:'Inter'; font-weight:600; font-size:14px;">{venue['name']}</div>
-            <div style="font-family:'Lexend'; font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:#535b71; margin-top:2px;">{venue['location']}</div>
+            <div style="font-family:'Lexend'; font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455; margin-top:2px;">{venue['location']}</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    if st.button("Edit", key=f"{key_prefix}_{venue['id']}", use_container_width=True):
+    if st.button("Edit", key=f"{key_prefix}_{venue['id']}", width='stretch'):
         navigate("manage_courts")

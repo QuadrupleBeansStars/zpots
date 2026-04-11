@@ -79,53 +79,45 @@ def render_landing():
     </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("<div style='height:3rem;'></div>", unsafe_allow_html=True)
+    st.space("large")
 
-    st.markdown("""
-    <div style="text-align:center;">
-        <span style="font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:2.5rem; color:#272e42; letter-spacing:-0.02em;">ZPOTS</span>
-        <p style="color:#535b71; font-size:16px; margin-top:8px;">AI-Powered Sports Court Booking Platform</p>
-    </div>
-    """, unsafe_allow_html=True)
+    with st.container(horizontal_alignment="center"):
+        st.title("⚡ ZPOTS")
+        st.write("AI-Powered Sports Court Booking Platform")
 
-    st.markdown("<div style='height:2rem;'></div>", unsafe_allow_html=True)
+    st.space("medium")
 
-    col1, col2, col3 = st.columns([1, 2, 1])
+    _, col2, _ = st.columns([1, 2, 1])
     with col2:
-        left, right = st.columns(2)
+        left, right = st.columns(2, gap="medium")
 
         with left:
-            st.markdown("""
-            <div class="zpots-card" style="text-align:center; padding:2.5rem 1.5rem;">
-                <div style="font-size:3rem; margin-bottom:1rem;">🏸</div>
-                <h2 style="font-size:1.5rem; margin-bottom:0.5rem;">I'm a Player</h2>
-                <p style="font-size:14px; color:#535b71;">Discover courts, book sessions, and track your games in Bangkok.</p>
-            </div>
-            """, unsafe_allow_html=True)
-            if st.button("Enter as Player →", type="primary", use_container_width=True, key="enter_player"):
-                st.session_state.page = "player_login"
-                st.session_state.flow = "player"
-                st.rerun()
+            with st.container(border=True):
+                with st.container(horizontal_alignment="center"):
+                    st.markdown("### 🏸")
+                    st.subheader("I'm a Player")
+                    st.caption("Discover courts, book sessions, and track your games in Bangkok.")
+                st.space("small")
+                if st.button("Enter as Player", type="primary", use_container_width=True, icon=":material/arrow_forward:", key="enter_player"):
+                    st.session_state.page = "player_login"
+                    st.session_state.flow = "player"
+                    st.rerun()
 
         with right:
-            st.markdown("""
-            <div class="zpots-card" style="text-align:center; padding:2.5rem 1.5rem;">
-                <div style="font-size:3rem; margin-bottom:1rem;">🏟</div>
-                <h2 style="font-size:1.5rem; margin-bottom:0.5rem;">I'm a Court Owner</h2>
-                <p style="font-size:14px; color:#535b71;">Manage venues, optimize pricing, and grow your sports business.</p>
-            </div>
-            """, unsafe_allow_html=True)
-            if st.button("Enter as Owner →", type="primary", use_container_width=True, key="enter_owner"):
-                st.session_state.page = "owner_login"
-                st.session_state.flow = "owner"
-                st.rerun()
+            with st.container(border=True):
+                with st.container(horizontal_alignment="center"):
+                    st.markdown("### 🏟")
+                    st.subheader("I'm a Court Owner")
+                    st.caption("Manage venues, optimize pricing, and grow your sports business.")
+                st.space("small")
+                if st.button("Enter as Owner", type="primary", use_container_width=True, icon=":material/arrow_forward:", key="enter_owner"):
+                    st.session_state.page = "owner_login"
+                    st.session_state.flow = "owner"
+                    st.rerun()
 
-    st.markdown("<div style='height:2rem;'></div>", unsafe_allow_html=True)
-    st.markdown("""
-    <div style="text-align:center;">
-        <span class="ai-tag">KINETIC PRECISION ENGINEERED</span>
-    </div>
-    """, unsafe_allow_html=True)
+    st.space("medium")
+    with st.container(horizontal_alignment="center"):
+        st.markdown('<span class="ai-tag">KINETIC PRECISION ENGINEERED</span>', unsafe_allow_html=True)
 
 
 # Main routing

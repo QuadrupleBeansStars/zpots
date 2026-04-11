@@ -58,7 +58,7 @@ def render():
             st.markdown(f"""
             <div class="zpots-card-surface" style="text-align:center; padding:1rem;">
                 <span style="font-size:1.3rem;">{'❄️' if i==0 else '🅿️' if i==1 else '🚿' if i==2 else '💧'}</span>
-                <div style="font-family:'Lexend'; font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:#535b71; margin-top:6px;">{amenity['label']}</div>
+                <div style="font-family:'Lexend'; font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455; margin-top:6px;">{amenity['label']}</div>
                 <div style="font-family:'Inter'; font-weight:600; font-size:13px; color:#272e42;">{amenity['value']}</div>
             </div>
             """, unsafe_allow_html=True)
@@ -81,48 +81,60 @@ def render():
         for i, (day, num) in enumerate(dates):
             with date_cols[i]:
                 btn_type = "primary" if st.session_state.selected_date_idx == i else "secondary"
-                if st.button(f"{day}\n{num}", key=f"date_{i}", use_container_width=True, type=btn_type):
+                if st.button(f"{day}\n{num}", key=f"date_{i}", width='stretch', type=btn_type):
                     st.session_state.selected_date_idx = i
                     st.rerun()
 
         # Time slots grid
-        st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
+        st.space("small")
         slot_rows = [slots[i:i+4] for i in range(0, len(slots), 4)]
         for row_idx, row in enumerate(slot_rows):
-            slot_cols = st.columns(4)
+            slot_cols = st.columns(4, gap="small")
             for col_idx, slot in enumerate(row):
                 flat_idx = row_idx * 4 + col_idx
                 with slot_cols[col_idx]:
                     is_selected = st.session_state.selected_slot_idx == flat_idx
-                    if slot["status"] == "booked":
-                        st.markdown(f"""
-                        <div class="zpots-card" style="padding:0.8rem; text-align:center; opacity:0.5;">
-                            <div style="font-size:12px; color:#535b71;">{slot['time_start']} - {slot['time_end']}</div>
-                            <div style="font-family:'Space Grotesk'; font-weight:700; font-size:15px; color:#272e42;">{slot['price']} THB</div>
-                            <div style="font-size:10px; color:#b02500;">Booked</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    elif slot["status"] == "maintenance":
-                        st.markdown(f"""
-                        <div class="zpots-card" style="padding:0.8rem; text-align:center; opacity:0.4;">
-                            <div style="font-size:12px; color:#535b71;">{slot['time_start']} - {slot['time_end']}</div>
-                            <div style="font-size:10px; color:#8a6500;">Maintenance</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                    status = slot["status"]
+                    is_available = status == "available"
+
+                    # Status line
+                    if status == "booked":
+                        status_html = '<div style="font-size:10px; font-weight:600; color:#c62828;">Booked</div>'
+                    elif status == "maintenance":
+                        status_html = '<div style="font-size:10px; font-weight:600; color:#e65100;">Maintenance</div>'
                     else:
-                        ai_html = f'<div style="margin-top:4px;"><span class="ai-tag" style="font-size:7px;">{slot["ai_tag"]}</span></div>' if slot.get("ai_tag") else ""
-                        border_style = "box-shadow: 0 0 0 2px #cffc00;" if is_selected else ""
-                        st.markdown(f"""
-                        <div class="zpots-card" style="padding:0.8rem; text-align:center; cursor:pointer; {border_style}">
-                            <div style="font-size:12px; color:#535b71;">{slot['time_start']} - {slot['time_end']}</div>
-                            <div style="font-family:'Space Grotesk'; font-weight:700; font-size:15px; color:#272e42;">{slot['price']} THB</div>
-                            <div style="font-size:10px; color:#506300;">Available</div>
-                            {ai_html}
-                        </div>
-                        """, unsafe_allow_html=True)
+                        status_html = '<div style="font-size:10px; font-weight:600; color:#2e6b00;">Available</div>'
+
+                    price_str = f"{slot['price']} THB" if is_available or status == "booked" else "—"
+                    border = "box-shadow:0 0 0 2px #cffc00;" if is_selected else ""
+                    opacity = "1" if is_available else "0.45"
+
+                    st.markdown(f"""
+                    <div class="zpots-card" style="
+                        padding:0.75rem 0.4rem;
+                        text-align:center;
+                        opacity:{opacity};
+                        height:88px;
+                        display:flex;
+                        flex-direction:column;
+                        align-items:center;
+                        justify-content:center;
+                        gap:4px;
+                        {border}
+                    ">
+                        <div style="font-size:11px; color:#3d5040; font-weight:500; white-space:nowrap;">{slot['time_start']} – {slot['time_end']}</div>
+                        <div style="font-family:'Space Grotesk'; font-weight:700; font-size:15px; color:#1c2526;">{price_str}</div>
+                        {status_html}
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                    # Always render a button so every cell has identical structure
+                    if is_available:
                         if st.button("Select", key=f"slot_{flat_idx}", use_container_width=True):
                             st.session_state.selected_slot_idx = flat_idx
                             st.rerun()
+                    else:
+                        st.button("—", key=f"slot_{flat_idx}", use_container_width=True, disabled=True)
 
     with summary_col:
         selected_slot = slots[st.session_state.selected_slot_idx] if st.session_state.selected_slot_idx is not None else None
@@ -135,7 +147,7 @@ def render():
             <div class="court-image" style="background:linear-gradient(135deg, {court['color']}, {court['color']}cc); height:120px; margin-bottom:1rem; border-radius:12px;">
                 <span style="font-size:2rem;">📍</span>
             </div>
-            <div style="font-family:'Inter'; font-size:11px; color:#535b71;">GET DIRECTIONS ↗</div>
+            <div style="font-family:'Inter'; font-size:11px; color:#3d4455;">GET DIRECTIONS ↗</div>
             <hr style="margin:1rem 0;">
             <h3 style="font-size:1rem; margin-bottom:1rem;">BOOKING SUMMARY</h3>
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
@@ -148,20 +160,23 @@ def render():
             </div>
             <hr>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-                <span style="font-family:'Lexend'; font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:#535b71;">TOTAL PRICE</span>
+                <span style="font-family:'Lexend'; font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">TOTAL PRICE</span>
             </div>
             <div style="font-family:'Space Grotesk'; font-weight:700; font-size:2rem; color:#272e42;">{total_price} THB</div>
-            <div style="font-size:11px; color:#535b71;">INCL. TAXES</div>
+            <div style="font-size:11px; color:#3d4455;">INCL. TAXES</div>
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
-        if st.button("PROCEED TO BOOKING →", type="primary", use_container_width=True, key="proceed_booking"):
-            st.session_state.booking_court = court
-            st.session_state.booking_slot = selected_slot
-            st.session_state.booking_total = total_price
-            navigate("player_booking")
+        if st.button("PROCEED TO BOOKING →", type="primary", width='stretch', key="proceed_booking"):
+            if selected_slot is None:
+                st.toast("Please select a time slot first.", icon="⚠️")
+            else:
+                st.session_state.booking_court = court
+                st.session_state.booking_slot = selected_slot
+                st.session_state.booking_total = total_price
+                navigate("player_booking")
 
         st.markdown("""
-        <div style="text-align:center; font-size:11px; color:#535b71; margin-top:8px;">Free cancellation up to 1hr before</div>
+        <div style="text-align:center; font-size:11px; color:#3d4455; margin-top:8px;">Free cancellation up to 1hr before</div>
         """, unsafe_allow_html=True)

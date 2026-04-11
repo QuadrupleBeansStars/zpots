@@ -4,6 +4,7 @@ from components.css import inject_global_css
 from components.nav import navigate, render_player_topbar
 from components.cards import court_card
 from data.dummy_data import COURTS, SPORTS_LIST, DISTRICTS
+from utils.gemini import parse_search_query
 
 
 def render():
@@ -12,8 +13,60 @@ def render():
 
     st.markdown("""
     <h1 style="font-size:2rem; margin-bottom:0;">Find Your Court</h1>
-    <p style="font-family:'Lexend'; font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#535b71;">Bangkok Precision Search</p>
+    <p style="font-family:'Lexend'; font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">Bangkok Precision Search</p>
     """, unsafe_allow_html=True)
+
+    # --- Natural Language Search ---
+    nl_col, btn_col = st.columns([5, 1])
+    with nl_col:
+        nl_query = st.text_input(
+            "AI Search",
+            placeholder='e.g. "badminton near Sukhumvit Friday evening under 400 baht"',
+            label_visibility="collapsed",
+            key="nl_search_input",
+        )
+    with btn_col:
+        nl_submit = st.button("Search", type="primary", width='stretch', key="nl_search_btn")
+
+    # Run Gemini when button pressed or query changes
+    if nl_submit and nl_query.strip():
+        with st.spinner("AI is parsing your search..."):
+            filters = parse_search_query(nl_query.strip())
+        st.session_state.nl_filters = filters
+        st.session_state.nl_query_used = nl_query.strip()
+        st.rerun()
+    elif not nl_query.strip() and st.session_state.get("nl_filters") is not None:
+        st.session_state.nl_filters = None
+        st.session_state.nl_query_used = None
+        st.rerun()
+
+    # Show parsed filter chips
+    nl_filters = st.session_state.get("nl_filters")
+    if nl_filters:
+        chips = []
+        if nl_filters.get("sport"):
+            chips.append(f"Sport: {nl_filters['sport']}")
+        if nl_filters.get("district"):
+            chips.append(f"District: {nl_filters['district']}")
+        if nl_filters.get("time_of_day"):
+            chips.append(f"Time: {nl_filters['time_of_day'].capitalize()}")
+        if nl_filters.get("max_price"):
+            chips.append(f"Max: ฿{nl_filters['max_price']}")
+
+        if chips:
+            chips_html = " &nbsp;·&nbsp; ".join(
+                f'<span style="background:#cffc00; color:#272e42; font-family:Lexend; font-size:10px; font-weight:600; padding:3px 10px; border-radius:20px;">{c}</span>'
+                for c in chips
+            )
+            st.markdown(
+                f'<div style="margin:6px 0 10px 0;">AI parsed &nbsp; {chips_html}</div>',
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                '<div style="margin:6px 0 10px 0; font-size:12px; color:#3d4455;">No specific filters detected — showing all courts.</div>',
+                unsafe_allow_html=True,
+            )
 
     # Filters in sidebar
     with st.sidebar:
@@ -22,7 +75,7 @@ def render():
         sport_cols = st.columns(2)
         for i, sport in enumerate(SPORTS_LIST):
             with sport_cols[i % 2]:
-                if st.checkbox(sport, value=(sport == "Badminton"), key=f"sport_{sport}"):
+                if st.checkbox(sport, value=False, key=f"sport_{sport}"):
                     selected_sports.append(sport)
 
         st.markdown("<h3 style='font-size:1rem; margin-top:1rem;'>Date</h3>", unsafe_allow_html=True)
@@ -39,12 +92,46 @@ def render():
         st.checkbox("Afternoon (12:00-17:00)", value=True, key="time_afternoon")
         st.checkbox("Evening (17:00-22:00)", value=True, key="time_evening")
 
+    # --- Filtering logic ---
+    filtered = list(COURTS)
+
+    # Apply NL filters (take precedence over sidebar when active)
+    if nl_filters:
+        if nl_filters.get("sport"):
+            filtered = [c for c in filtered if c["sport"].lower() == nl_filters["sport"].lower()]
+        if nl_filters.get("district"):
+            filtered = [c for c in filtered if nl_filters["district"].lower() in c.get("district", "").lower()]
+        if nl_filters.get("max_price"):
+            filtered = [c for c in filtered if c["price_per_hour"] <= nl_filters["max_price"]]
+        if nl_filters.get("time_of_day"):
+            tod = nl_filters["time_of_day"].lower()
+            tod_ranges = {"morning": range(6, 12), "afternoon": range(12, 17), "evening": range(17, 22)}
+            hours = tod_ranges.get(tod, range(0, 24))
+
+            def overlaps_peak(court):
+                peak = court.get("peak_hours", "")
+                try:
+                    start_h = int(peak.split("-")[0].split(":")[0])
+                    return start_h in hours
+                except Exception:
+                    return True
+
+            filtered = [c for c in filtered if overlaps_peak(c)]
+    else:
+        # Sidebar sport filter
+        if selected_sports:
+            filtered = [c for c in filtered if c["sport"] in selected_sports] or list(COURTS)
+
+    # Fallback: show all if nothing matched
+    if not filtered:
+        filtered = list(COURTS)
+
     # Top bar with view toggle and sort
     top1, top2, top3 = st.columns([2, 1, 1])
     with top1:
         st.markdown(f"""
-        <span style="font-family:'Lexend'; font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#535b71;">
-            SHOWING {len(COURTS)} COURTS IN BANGKOK
+        <span style="font-family:'Lexend'; font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">
+            SHOWING {len(filtered)} COURTS IN BANGKOK
         </span>
         """, unsafe_allow_html=True)
     with top2:
@@ -53,10 +140,6 @@ def render():
         st.selectbox("Sort by", ["Highest Rated", "Lowest Price", "Closest"], key="sort_by", label_visibility="collapsed")
 
     # Court grid
-    filtered = COURTS
-    if selected_sports:
-        filtered = [c for c in COURTS if c["sport"] in selected_sports] or COURTS
-
     rows = [filtered[i:i+3] for i in range(0, len(filtered), 3)]
     for row_idx, row in enumerate(rows):
         cols = st.columns(3)
@@ -67,4 +150,4 @@ def render():
     st.markdown("<div style='height:1rem;'></div>", unsafe_allow_html=True)
     col_center = st.columns([1, 1, 1])
     with col_center[1]:
-        st.button("Load More Courts", use_container_width=True, key="load_more")
+        st.button("Load More Courts", width='stretch', key="load_more")

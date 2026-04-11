@@ -21,15 +21,17 @@ def render():
         if st.button("Add New Slot", type="primary", key="add_slot"):
             st.toast("Slot creation form opened!")
 
-    st.markdown('<p style="color:#535b71; font-size:14px;">Precision management of court inventory. AI is currently forecasting 97% occupancy for weekend prime slots.</p>', unsafe_allow_html=True)
+    st.markdown('<p style="color:#3d4455; font-size:14px;">Precision management of court inventory. AI is currently forecasting 97% occupancy for weekend prime slots.</p>', unsafe_allow_html=True)
 
     days = ["MON<br>12", "TUE<br>13", "WED<br>14", "THU<br>15", "FRI<br>16", "SAT<br>17", "SUN<br>18"]
     day_cols = st.columns(7)
 
     for i, day in enumerate(days):
         with day_cols[i]:
-            bg = "#cffc00" if i == 2 else "#eef0ff"
-            st.markdown(f'<div style="text-align:center; font-family:\'Lexend\'; font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#535b71; padding:8px 0; background:{bg}; border-radius:8px; margin-bottom:8px;">{day}</div>', unsafe_allow_html=True)
+            is_active = i == 2
+            bg = "#cffc00" if is_active else "#eef0ff"
+            text_color = "#1a2600" if is_active else "#3d4455"
+            st.markdown(f'<div style="text-align:center; font-family:\'Lexend\'; font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:{text_color}; padding:8px 0; background:{bg}; border-radius:8px; margin-bottom:8px;">{day}</div>', unsafe_allow_html=True)
 
             slots = SLOT_CALENDAR.get(i, [])
             if slots:
@@ -37,7 +39,7 @@ def render():
                     st.markdown(f"""
                     <div style="background:{slot['color']}; border-radius:8px; padding:8px; margin-bottom:6px; font-size:11px;">
                         <div style="font-weight:600; color:#272e42;">{slot['label']}</div>
-                        <div style="color:#535b71; font-size:10px;">{slot['time']}</div>
+                        <div style="color:#3d4455; font-size:10px;">{slot['time']}</div>
                     </div>
                     """, unsafe_allow_html=True)
             else:

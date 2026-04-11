@@ -51,13 +51,13 @@ def render():
         <div style="font-family:'Inter'; font-weight:600; margin-bottom:8px;">
             <span style="color:#cffc00; font-size:10px;">●</span> Semi-Pro Tournament
         </div>
-        <div style="font-size:12px; color:#535b71;">14:00 - 16:30 • Court A</div>
+        <div style="font-size:12px; color:#3d4455;">14:00 - 16:30 • Court A</div>
         <hr>
         <div style="font-family:'Inter'; font-weight:600; margin-bottom:4px;">Junior Training</div>
-        <div style="font-size:12px; color:#535b71;">12:30 - 14:00 • Pitch 4</div>
+        <div style="font-size:12px; color:#3d4455;">12:30 - 14:00 • Pitch 4</div>
         <hr>
         <div style="font-family:'Inter'; font-weight:600; margin-bottom:4px;">Corporate Mix</div>
-        <div style="font-size:12px; color:#535b71;">17:30 - 19:00 • Club Court</div>
+        <div style="font-size:12px; color:#3d4455;">17:30 - 19:00 • Club Court</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -71,7 +71,7 @@ def render():
             st.selectbox("Sort", ["Time Ascending", "Time Descending", "Status"], key="sort_filter")
 
         st.markdown("""
-        <div style="display:grid; grid-template-columns: 2fr 2fr 1fr 0.5fr; gap:0; padding:12px 16px; font-family:'Lexend'; font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#535b71;">
+        <div style="display:grid; grid-template-columns: 2fr 2fr 1fr 0.5fr; gap:0; padding:12px 16px; font-family:'Lexend'; font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#3d4455;">
             <div>CUSTOMER</div><div>SESSION INFO</div><div>STATUS</div><div>ACTION</div>
         </div>
         """, unsafe_allow_html=True)
@@ -84,21 +84,21 @@ def render():
                     <div style="width:36px; height:36px; border-radius:50%; background:{booking['avatar_color']}; color:white; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600;">{booking['customer'][0]}</div>
                     <div>
                         <div style="font-family:'Inter'; font-weight:600; font-size:14px;">{booking['customer']}</div>
-                        <div style="font-size:11px; color:#535b71;">Member ID: {booking['member_id']}</div>
+                        <div style="font-size:11px; color:#3d4455;">Member ID: {booking['member_id']}</div>
                     </div>
                 </div>
                 <div>
                     <div style="font-size:13px;">🏟 {booking['court']} • {booking['sport']}</div>
-                    <div style="font-size:12px; color:#535b71;">🕐 {booking['time']}</div>
+                    <div style="font-size:12px; color:#3d4455;">🕐 {booking['time']}</div>
                 </div>
                 <div><span class="status-badge {status_class}">{booking['status']}</span></div>
                 <div style="text-align:center; cursor:pointer; font-size:18px;">⋮</div>
             </div>
             """, unsafe_allow_html=True)
 
-        st.markdown('<div style="font-size:12px; color:#535b71; margin-top:1rem;">SHOWING 4 OF 128 BOOKINGS</div>', unsafe_allow_html=True)
+        st.markdown('<div style="font-size:12px; color:#3d4455; margin-top:1rem;">SHOWING 4 OF 128 BOOKINGS</div>', unsafe_allow_html=True)
 
     with tab2:
-        st.markdown('<p style="color:#535b71;">Weekly booking overview coming soon.</p>', unsafe_allow_html=True)
+        st.markdown('<p style="color:#3d4455;">Weekly booking overview coming soon.</p>', unsafe_allow_html=True)
     with tab3:
-        st.markdown('<p style="color:#535b71;">Calendar view coming soon.</p>', unsafe_allow_html=True)
+        st.markdown('<p style="color:#3d4455;">Calendar view coming soon.</p>', unsafe_allow_html=True)

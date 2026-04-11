@@ -12,61 +12,64 @@ def navigate(page_name, **kwargs):
 
 def render_player_topbar():
     """Render the player top navigation bar."""
-    cols = st.columns([2, 1, 1, 1, 1, 1])
+    cols = st.columns([3, 1, 1, 1, 1])
     with cols[0]:
-        if st.button("**ZPOTS**", key="nav_logo", use_container_width=True):
+        if st.button("⚡ **ZPOTS**", key="nav_logo"):
+            navigate("player_home")
+    with cols[1]:
+        if st.button("Explore", icon=":material/explore:", key="nav_explore"):
             navigate("player_home")
     with cols[2]:
-        if st.button("Explore", key="nav_explore"):
-            navigate("player_home")
-    with cols[3]:
-        if st.button("My Bookings", key="nav_bookings"):
+        if st.button("Bookings", icon=":material/calendar_month:", key="nav_bookings"):
             navigate("my_bookings")
-    with cols[4]:
-        if st.button("Insights", key="nav_insights"):
+    with cols[3]:
+        if st.button("Insights", icon=":material/insights:", key="nav_insights"):
             pass
-    with cols[5]:
-        st.markdown("🔔 &nbsp; 👤", unsafe_allow_html=True)
+    with cols[4]:
+        with st.container(horizontal=True, horizontal_alignment="right"):
+            st.button("", icon=":material/notifications:", key="nav_notif")
+            st.button("", icon=":material/person:", key="nav_profile")
 
 
 def render_owner_sidebar():
     """Render the owner sidebar navigation."""
     with st.sidebar:
-        st.markdown("""
-        <div style="padding: 0.5rem 0 1.5rem 0;">
-            <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.3rem; color: #272e42;">
-                ZPOTS Admin
-            </span><br>
-            <span style="font-family: 'Lexend', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #535b71;">
-                Elite Venue Partner
-            </span>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("### ⚡ ZPOTS Admin")
+        st.caption("ELITE VENUE PARTNER")
+        st.divider()
 
-        menu_items = {
-            "owner_dashboard": ("📊", "Dashboard"),
-            "manage_courts": ("🏟", "Venue Manager"),
-            "manage_slots": ("📅", "Slot Control"),
-            "pricing_setup": ("💰", "Pricing"),
-            "booking_dashboard": ("📋", "Booking Dashboard"),
-            "ai_insights": ("🤖", "AI Ops"),
-            "optimization": ("⚡", "Optimization"),
-        }
+        menu_items = [
+            ("owner_dashboard",  ":material/dashboard:",     "Dashboard"),
+            ("manage_courts",    ":material/stadium:",       "Venue Manager"),
+            ("manage_slots",     ":material/calendar_month:","Slot Control"),
+            ("pricing_setup",    ":material/payments:",      "Pricing"),
+            ("booking_dashboard",":material/list_alt:",      "Bookings"),
+            ("ai_insights",      ":material/smart_toy:",     "AI Ops"),
+            ("optimization",     ":material/bolt:",          "Optimization"),
+        ]
 
         current_page = st.session_state.get("page", "owner_dashboard")
 
-        for page_key, (icon, label) in menu_items.items():
+        for page_key, icon, label in menu_items:
             is_active = current_page == page_key
-            bg = "background: linear-gradient(135deg, #cffc00, #e8ff66); color: #4b5e00; font-weight: 600;" if is_active else ""
-            if st.button(
-                f"{icon}  {label}",
+            st.button(
+                label,
+                icon=icon,
                 key=f"sidebar_{page_key}",
                 use_container_width=True,
                 type="primary" if is_active else "secondary",
-            ):
-                navigate(page_key)
+                on_click=navigate,
+                kwargs={"page_name": page_key},
+            )
 
-        st.markdown("<br>" * 3, unsafe_allow_html=True)
+        st.space("large")
 
-        if st.button("➕ Add New Court", key="sidebar_add_court", type="primary", use_container_width=True):
-            navigate("add_edit_court", editing_court_id=None)
+        st.button(
+            "Add New Court",
+            icon=":material/add_circle:",
+            key="sidebar_add_court",
+            type="primary",
+            use_container_width=True,
+            on_click=navigate,
+            kwargs={"page_name": "add_edit_court", "editing_court_id": None},
+        )

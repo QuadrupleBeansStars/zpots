@@ -1,4 +1,4 @@
-"""ZPOTS Design System - Kinetic Precision CSS."""
+"""ZPOTS Design System - Sports Theme CSS."""
 import streamlit as st
 
 
@@ -6,94 +6,56 @@ def inject_global_css():
     """Inject the full design system CSS."""
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Lexend:wght@300;400;500;600;700&display=swap');
-    @import url('https://fonts.googleapis.com/icon?family=Material+Icons+Outlined');
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=Lexend:wght@300;400;500;600;700&display=swap');
 
     :root {
         --zpots-lime: #cffc00;
-        --zpots-lime-dim: #c2ed00;
-        --zpots-primary: #506300;
-        --zpots-primary-dark: #4b5e00;
-        --zpots-secondary: #615e00;
-        --zpots-surface: #f6f6ff;
-        --zpots-surface-low: #eef0ff;
-        --zpots-surface-container: #e2e7ff;
-        --zpots-surface-high: #d1dcff;
-        --zpots-on-surface: #272e42;
-        --zpots-on-surface-variant: #535b71;
-        --zpots-outline: #6f768e;
-        --zpots-outline-variant: #a5adc6;
-        --zpots-inverse-surface: #060e20;
-        --zpots-error: #b02500;
+        --zpots-lime-dim: #b8e000;
+        --zpots-primary: #2e6b00;
+        --zpots-primary-dark: #1e4a00;
+        --zpots-surface: #ffffff;
+        --zpots-surface-low: #f2f9ee;
+        --zpots-surface-container: #e3f0de;
+        --zpots-surface-high: #cde3c7;
+        --zpots-on-surface: #1c2526;
+        --zpots-on-surface-variant: #3d5040;
+        --zpots-outline: #6f8a6e;
+        --zpots-outline-variant: #a8c4a5;
+        --zpots-inverse-surface: #0d1f0d;
+        --zpots-error: #c62828;
         --zpots-white: #ffffff;
     }
-
-    /* Global font overrides */
-    html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif !important;
-        color: var(--zpots-on-surface);
-    }
-    h1, h2, h3 {
-        font-family: 'Space Grotesk', sans-serif !important;
-        color: var(--zpots-on-surface) !important;
-        letter-spacing: -0.02em;
-    }
-    h1 { font-weight: 700 !important; }
 
     /* Hide Streamlit branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
 
-    /* Main container adjustments */
+    /* Main container */
     .block-container {
         padding-top: 1rem !important;
         padding-bottom: 1rem !important;
         max-width: 1200px !important;
     }
 
-    /* Primary button -> Electric Lime */
+    /* Primary button — Electric Lime brand */
     .stButton > button[kind="primary"],
     .stButton > button[data-testid="baseButton-primary"] {
-        background: linear-gradient(135deg, #cffc00, #c2ed00) !important;
-        color: #4b5e00 !important;
+        background: linear-gradient(135deg, #cffc00, #b8e000) !important;
+        color: #1e4a00 !important;
         border: none !important;
-        border-radius: 12px !important;
-        font-family: 'Space Grotesk', sans-serif !important;
         font-weight: 700 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.05em !important;
-        padding: 0.6rem 1.5rem !important;
+        letter-spacing: 0.03em !important;
         transition: all 0.2s ease !important;
     }
     .stButton > button[kind="primary"]:hover,
     .stButton > button[data-testid="baseButton-primary"]:hover {
-        background: linear-gradient(135deg, #c2ed00, #b5de00) !important;
+        background: linear-gradient(135deg, #b8e000, #a6cc00) !important;
         transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(207,252,0,0.35) !important;
     }
 
-    /* Secondary button */
-    .stButton > button[kind="secondary"],
-    .stButton > button[data-testid="baseButton-secondary"] {
-        background: var(--zpots-white) !important;
-        color: var(--zpots-on-surface) !important;
-        border: none !important;
-        border-radius: 12px !important;
-        font-family: 'Inter', sans-serif !important;
-        font-weight: 500 !important;
-        box-shadow: 0 2px 8px rgba(39,46,66,0.06) !important;
-        padding: 0.6rem 1.5rem !important;
-    }
-
-    /* Default button styling */
-    .stButton > button {
-        border-radius: 12px !important;
-        font-family: 'Inter', sans-serif !important;
-        border: none !important;
-        transition: all 0.2s ease !important;
-    }
-
-    /* Tabs styling */
+    /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
         gap: 0px;
         background: var(--zpots-surface-low);
@@ -102,13 +64,12 @@ def inject_global_css():
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 10px;
-        font-family: 'Inter', sans-serif;
         font-weight: 500;
         padding: 8px 20px;
     }
     .stTabs [aria-selected="true"] {
         background: var(--zpots-white) !important;
-        box-shadow: 0 2px 8px rgba(39,46,66,0.08);
+        box-shadow: 0 2px 8px rgba(28,37,38,0.08);
     }
     .stTabs [data-baseweb="tab-highlight"] { display: none; }
     .stTabs [data-baseweb="tab-border"] { display: none; }
@@ -118,7 +79,7 @@ def inject_global_css():
         background: var(--zpots-white);
         border-radius: 16px;
         padding: 1.5rem;
-        box-shadow: 0 8px 24px rgba(39,46,66,0.06);
+        box-shadow: 0 4px 16px rgba(28,37,38,0.06);
     }
     .zpots-card-dark {
         background: var(--zpots-inverse-surface);
@@ -127,15 +88,15 @@ def inject_global_css():
         color: white;
     }
     .glass-card {
-        background: rgba(255,255,255,0.85);
+        background: rgba(255,255,255,0.92);
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
         border-radius: 16px;
         padding: 2rem;
-        box-shadow: 0 8px 24px rgba(39,46,66,0.08);
+        box-shadow: 0 8px 24px rgba(28,37,38,0.08);
     }
     .zpots-card-lime {
-        background: linear-gradient(135deg, #cffc00, #e8ff66);
+        background: linear-gradient(135deg, #cffc00, #e4ff7a);
         border-radius: 16px;
         padding: 1.5rem;
     }
@@ -150,8 +111,8 @@ def inject_global_css():
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background: rgba(207,252,0,0.15);
-        color: #506300;
+        background: rgba(207,252,0,0.18);
+        color: #2e6b00;
         padding: 4px 12px;
         border-radius: 999px;
         font-family: 'Lexend', sans-serif;
@@ -168,12 +129,14 @@ def inject_global_css():
         border-radius: 50%;
         box-shadow: 0 0 8px #cffc00;
     }
-    .status-confirmed { background: rgba(207,252,0,0.15); color: #506300; }
-    .status-completed { background: rgba(80,99,0,0.1); color: #506300; }
-    .status-cancelled { background: rgba(176,37,0,0.1); color: #b02500; }
-    .status-booked { background: rgba(207,252,0,0.15); color: #506300; }
-    .status-active { background: rgba(207,252,0,0.2); color: #506300; }
-    .status-maintenance { background: rgba(255,165,0,0.15); color: #8a6500; }
+
+    /* Status colors */
+    .status-confirmed { background: rgba(207,252,0,0.18); color: #2e6b00; }
+    .status-completed { background: rgba(46,107,0,0.12); color: #2e6b00; }
+    .status-cancelled { background: rgba(198,40,40,0.1); color: #c62828; }
+    .status-booked { background: rgba(207,252,0,0.18); color: #2e6b00; }
+    .status-active { background: rgba(207,252,0,0.22); color: #2e6b00; }
+    .status-maintenance { background: rgba(230,81,0,0.12); color: #e65100; }
 
     .status-badge {
         display: inline-block;
@@ -195,8 +158,7 @@ def inject_global_css():
         display: flex;
         align-items: center;
         justify-content: center;
-        color: rgba(255,255,255,0.6);
-        font-family: 'Space Grotesk', sans-serif;
+        color: rgba(255,255,255,0.75);
         font-size: 1.2rem;
     }
 
@@ -205,7 +167,8 @@ def inject_global_css():
         background: var(--zpots-white);
         border-radius: 16px;
         padding: 1.2rem;
-        box-shadow: 0 4px 16px rgba(39,46,66,0.04);
+        box-shadow: 0 2px 12px rgba(28,37,38,0.05);
+        border: 1px solid var(--zpots-surface-container);
     }
     .kpi-value {
         font-family: 'Space Grotesk', sans-serif;
@@ -231,23 +194,22 @@ def inject_global_css():
 
     /* Revenue banner */
     .revenue-banner {
-        background: linear-gradient(135deg, #506300 0%, #789200 50%, #cffc00 100%);
+        background: linear-gradient(135deg, #1e4a00 0%, #2e6b00 50%, #cffc00 100%);
         border-radius: 20px;
         padding: 2rem;
         color: white;
     }
-    .revenue-banner h1 { color: white !important; }
+    .revenue-banner h1, .revenue-banner h2 { color: white !important; }
 
     /* Star rating */
     .star-filled { color: #cffc00; font-size: 28px; }
-    .star-empty { color: #d1dcff; font-size: 28px; }
+    .star-empty { color: #c4dcc0; font-size: 28px; }
 
     /* Chip / Filter chip */
     .chip {
         display: inline-block;
         padding: 6px 16px;
         border-radius: 999px;
-        font-family: 'Inter', sans-serif;
         font-size: 13px;
         font-weight: 500;
         cursor: pointer;
@@ -262,44 +224,6 @@ def inject_global_css():
         color: var(--zpots-primary-dark);
     }
 
-    /* Dark login background */
-    .dark-login-bg {
-        background: linear-gradient(135deg, #060e20 0%, #1a2a3a 50%, #0a1a2a 100%);
-        min-height: 100vh;
-        padding: 2rem;
-        margin: -1rem -1rem 0 -1rem;
-    }
-
-    /* Sidebar styling for owner */
-    section[data-testid="stSidebar"] {
-        background: var(--zpots-white) !important;
-        border-right: none !important;
-    }
-    section[data-testid="stSidebar"] .stRadio label {
-        font-family: 'Inter', sans-serif !important;
-        font-weight: 500 !important;
-        padding: 8px 16px !important;
-        border-radius: 10px !important;
-        transition: all 0.2s ease !important;
-    }
-
-    /* Input styling */
-    .stTextInput input, .stSelectbox select, .stNumberInput input {
-        border-radius: 12px !important;
-        border: none !important;
-        background: var(--zpots-surface-low) !important;
-        font-family: 'Inter', sans-serif !important;
-    }
-    .stTextInput input:focus {
-        background: var(--zpots-white) !important;
-        box-shadow: 0 0 0 2px rgba(80,99,0,0.2) !important;
-    }
-
-    /* Toggle styling */
-    .stToggle label span {
-        font-family: 'Inter', sans-serif !important;
-    }
-
     /* Metric override */
     [data-testid="stMetricValue"] {
         font-family: 'Space Grotesk', sans-serif !important;
@@ -310,11 +234,7 @@ def inject_global_css():
         letter-spacing: 0.08em !important;
     }
 
-    /* Link styling */
-    a { color: var(--zpots-primary) !important; text-decoration: none !important; }
-    a:hover { color: var(--zpots-primary-dark) !important; }
-
-    /* Horizontal rule replacement */
+    /* Horizontal rule */
     hr {
         border: none;
         height: 1px;
@@ -324,13 +244,6 @@ def inject_global_css():
 
     /* Hide fullscreen button on images */
     button[title="View fullscreen"] { display: none !important; }
-
-    /* Expander styling */
-    .streamlit-expanderHeader {
-        font-family: 'Inter', sans-serif !important;
-        font-weight: 600 !important;
-        border-radius: 12px !important;
-    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -359,13 +272,16 @@ def inject_login_css():
 
 
 def inject_owner_sidebar_css():
-    """Additional CSS for owner pages with sidebar."""
+    """Additional CSS for owner pages — dark sidebar with fixed width."""
     st.markdown("""
     <style>
     section[data-testid="stSidebar"] {
-        background: var(--zpots-white) !important;
-        min-width: 240px !important;
-        max-width: 240px !important;
+        min-width: 248px !important;
+        max-width: 248px !important;
+    }
+    section[data-testid="stSidebar"] .stButton > button {
+        text-align: left !important;
+        justify-content: flex-start !important;
     }
     </style>
     """, unsafe_allow_html=True)

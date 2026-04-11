@@ -21,7 +21,7 @@ def render():
         st.markdown("""
         <div class="glass-card" style="background:rgba(255,255,255,0.92); padding:2.5rem;">
             <h1 style="font-size:2.2rem; margin-bottom:0.2rem; color:#272e42 !important;">Welcome Back,<br>Athlete</h1>
-            <p style="color:#535b71 !important; font-size:14px; margin-bottom:1.5rem;">Log in to book your next game.</p>
+            <p style="color:#3d4455 !important; font-size:14px; margin-bottom:1.5rem;">Log in to book your next game.</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -30,29 +30,29 @@ def render():
 
         st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
 
-        if st.button("LOG IN", type="primary", use_container_width=True, key="player_login_btn"):
+        if st.button("LOG IN", type="primary", width='stretch', key="player_login_btn"):
             st.session_state.logged_in = True
             st.session_state.flow = "player"
             navigate("player_home")
 
         st.markdown("""
-        <div style="text-align:center; margin:1rem 0; color:rgba(255,255,255,0.5); font-size:13px;">or continue with</div>
+        <div style="text-align:center; margin:1rem 0; color:rgba(255,255,255,0.85); font-size:13px;">or continue with</div>
         """, unsafe_allow_html=True)
 
         gcol1, gcol2 = st.columns(2)
         with gcol1:
-            if st.button("Google", use_container_width=True, key="google_login"):
+            if st.button("Google", width='stretch', key="google_login"):
                 st.session_state.logged_in = True
                 st.session_state.flow = "player"
                 navigate("player_home")
         with gcol2:
-            if st.button("Facebook", use_container_width=True, key="fb_login"):
+            if st.button("Facebook", width='stretch', key="fb_login"):
                 st.session_state.logged_in = True
                 st.session_state.flow = "player"
                 navigate("player_home")
 
         st.markdown("""
-        <div style="text-align:center; margin-top:1.5rem; font-size:13px; color:rgba(255,255,255,0.7);">
+        <div style="text-align:center; margin-top:1.5rem; font-size:13px; color:rgba(255,255,255,0.9);">
             Don't have an account? <strong style="color:white; cursor:pointer;">Sign Up</strong>
         </div>
         """, unsafe_allow_html=True)
