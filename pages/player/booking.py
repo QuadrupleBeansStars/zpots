@@ -17,13 +17,27 @@ def render():
             navigate("court_details")
         return
 
+    back_col, title_col = st.columns([1, 5])
+    with back_col:
+        if st.button("← Back", key="back_to_court_details"):
+            navigate("court_details")
+    with title_col:
+        st.markdown("""
+        <div style="display:flex; align-items:center; height:100%;">
+            <span style="font-family:'Lexend'; font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">SECURE CHECKOUT</span>
+        </div>
+        """, unsafe_allow_html=True)
 
-    st.markdown("""
-    <div style="display:flex; align-items:center; gap:8px; margin-bottom:1rem;">
-        <span style="font-size:18px; cursor:pointer;">←</span>
-        <span style="font-family:'Lexend'; font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">SECURE CHECKOUT</span>
-    </div>
-    """, unsafe_allow_html=True)
+    duration = st.session_state.get("booking_duration", 1)
+    selected_date_idx = st.session_state.get("selected_date_idx", 0)
+    dates = [("MON", "12"), ("TUE", "13"), ("WED", "14"), ("THU", "15"), ("FRI", "16"), ("SAT", "17"), ("SUN", "18")]
+    date_info = dates[min(selected_date_idx, len(dates) - 1)]
+    date_str = f"{date_info[0]}, {date_info[1]} Nov"
+
+    start_h = int(slot["time_start"].split(":")[0])
+    end_h = start_h + duration
+    actual_end_time = f"{end_h:02d}:00"
+    dur_label = f"{duration} hr" if duration == 1 else f"{duration} hrs"
 
     left_col, right_col = st.columns([1, 1])
 
@@ -45,10 +59,10 @@ def render():
         st.markdown(f"""
         <div class="zpots-card-surface">
             <div style="font-family:'Lexend'; font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455; margin-bottom:8px;">SELECTED SESSION</div>
-            <div style="font-family:'Inter'; font-weight:700; font-size:18px; color:#272e42;">Court 01 | Mon, 12th Nov</div>
+            <div style="font-family:'Inter'; font-weight:700; font-size:18px; color:#272e42;">{court['name']} | {date_str}</div>
             <div style="display:flex; gap:1.5rem; margin-top:8px;">
-                <span style="font-size:13px; color:#3d4455;">🕐 {slot['time_start']} - {slot['time_end']}</span>
-                <span style="font-size:13px; color:#3d4455;">⏱ 120 Minutes</span>
+                <span style="font-size:13px; color:#3d4455;">🕐 {slot['time_start']} - {actual_end_time}</span>
+                <span style="font-size:13px; color:#3d4455;">⏱ {duration * 60} Minutes ({dur_label})</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -64,7 +78,7 @@ def render():
         )
 
     with right_col:
-        base_price = slot["price"] * 2
+        base_price = slot["price"] * duration
         discount = 80
         service_fee = 25
         total = base_price - discount + service_fee
@@ -73,7 +87,7 @@ def render():
         <div class="zpots-card">
             <h3 style="font-size:1.1rem; margin-bottom:1rem;">Summary</h3>
             <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                <span style="font-size:14px; color:#3d4455;">Base price (2 hrs)</span>
+                <span style="font-size:14px; color:#3d4455;">Base price ({dur_label})</span>
                 <span style="font-family:'Inter'; font-weight:500;">฿{base_price:.2f}</span>
             </div>
             <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">

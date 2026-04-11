@@ -9,6 +9,10 @@ def render():
     inject_global_css()
     render_player_topbar()
 
+    # Back button
+    if st.button("← Back to Search", key="back_to_search"):
+        navigate("player_search")
+
     court_id = st.session_state.get("selected_court_id", "bbc-01")
     court = next((c for c in COURTS if c["id"] == court_id), COURTS[0])
     slots = get_time_slots(court_id)
@@ -18,6 +22,8 @@ def render():
         st.session_state.selected_date_idx = 0
     if "selected_slot_idx" not in st.session_state:
         st.session_state.selected_slot_idx = None
+    if "booking_duration" not in st.session_state:
+        st.session_state.booking_duration = 1
 
     # Court images
     st.markdown(f"""
@@ -85,6 +91,23 @@ def render():
                     st.session_state.selected_date_idx = i
                     st.rerun()
 
+        # Duration selector
+        st.markdown("<div style='height:0.75rem;'></div>", unsafe_allow_html=True)
+        dur_label_col, dur_pick_col = st.columns([1, 3])
+        with dur_label_col:
+            st.markdown("""
+            <div style="font-family:'Lexend'; font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455; margin-top:10px;">DURATION</div>
+            """, unsafe_allow_html=True)
+        with dur_pick_col:
+            booking_duration = st.radio(
+                "Duration",
+                [1, 2, 3],
+                format_func=lambda x: f"{x} hr" if x == 1 else f"{x} hrs",
+                horizontal=True,
+                key="booking_duration",
+                label_visibility="collapsed",
+            )
+
         # Time slots grid
         st.space("small")
         slot_rows = [slots[i:i+4] for i in range(0, len(slots), 4)]
@@ -139,8 +162,18 @@ def render():
     with summary_col:
         selected_slot = slots[st.session_state.selected_slot_idx] if st.session_state.selected_slot_idx is not None else None
         date_info = dates[st.session_state.selected_date_idx]
+        dur = st.session_state.get("booking_duration", 1)
 
-        total_price = selected_slot["price"] * 2 if selected_slot else 900
+        total_price = selected_slot["price"] * dur if selected_slot else 0
+
+        if selected_slot:
+            start_h = int(selected_slot["time_start"].split(":")[0])
+            end_h = start_h + dur
+            end_time_str = f"{end_h:02d}:00"
+            dur_label = f"{dur} hr" if dur == 1 else f"{dur} hrs"
+            time_display = f"{selected_slot['time_start']} - {end_time_str} ({dur_label})"
+        else:
+            time_display = "-- : -- (select a slot)"
 
         st.markdown(f"""
         <div class="zpots-card" style="position:sticky; top:1rem;">
@@ -152,11 +185,11 @@ def render():
             <h3 style="font-size:1rem; margin-bottom:1rem;">BOOKING SUMMARY</h3>
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
                 <span>📅</span>
-                <span style="font-family:'Inter'; font-size:14px;">Monday, {date_info[1]}th Nov</span>
+                <span style="font-family:'Inter'; font-size:14px;">{date_info[0].capitalize()}, {date_info[1]}th Nov</span>
             </div>
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
                 <span>🕐</span>
-                <span style="font-family:'Inter'; font-size:14px;">{selected_slot['time_start'] + ' - ' + selected_slot['time_end'] + ' (2 hrs)' if selected_slot else '-- : -- (select a slot)'}</span>
+                <span style="font-family:'Inter'; font-size:14px;">{time_display}</span>
             </div>
             <hr>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">

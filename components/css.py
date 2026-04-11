@@ -255,13 +255,28 @@ def inject_login_css():
     .stApp {
         background: linear-gradient(160deg, #060e20 0%, #0d1b2e 40%, #162d3e 70%, #1a3040 100%) !important;
     }
+    /* Default: white text for dark background */
     .stApp h1, .stApp h2, .stApp h3 {
         color: white !important;
     }
     .stApp p, .stApp label, .stApp span {
-        color: rgba(255,255,255,0.8) !important;
+        color: rgba(255,255,255,0.85) !important;
     }
-    .stTextInput label, .stTextInput input {
+    /* Glass card overrides — dark text on white card */
+    .glass-card h1, .glass-card h2, .glass-card h3 {
+        color: #272e42 !important;
+    }
+    .glass-card p, .glass-card span {
+        color: #3d4455 !important;
+    }
+    /* Input fields always use dark text */
+    .stTextInput label {
+        color: rgba(255,255,255,0.9) !important;
+        font-family: 'Lexend', sans-serif !important;
+        font-size: 11px !important;
+        letter-spacing: 0.08em !important;
+    }
+    .stTextInput input {
         color: var(--zpots-on-surface) !important;
     }
     .block-container {
