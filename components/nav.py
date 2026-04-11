@@ -73,3 +73,14 @@ def render_owner_sidebar():
             on_click=navigate,
             kwargs={"page_name": "add_edit_court", "editing_court_id": None},
         )
+
+        st.divider()
+
+        st.button(
+            "Back to home",
+            icon=":material/logout:",
+            key="sidebar_logout",
+            use_container_width=True,
+            on_click=navigate,
+            kwargs={"page_name": "landing"},
+        )
