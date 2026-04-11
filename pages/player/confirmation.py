@@ -2,7 +2,7 @@
 import streamlit as st
 from components.css import inject_global_css
 from components.nav import navigate, render_player_topbar
-from data.dummy_data import COURTS, PLAYER_BOOKINGS
+from data.dummy_data import COURTS
 from utils.gemini import chat_with_court_assistant
 
 
@@ -10,8 +10,26 @@ def render():
     inject_global_css()
     render_player_topbar()
 
-    booking = PLAYER_BOOKINGS[0]
-    court = next((c for c in COURTS if c["id"] == booking["court_id"]), COURTS[0])
+    # Use data from the booking flow, not hardcoded dummy data
+    court = st.session_state.get("booking_court", COURTS[0])
+    slot = st.session_state.get("booking_slot", {})
+    selected_date_idx = st.session_state.get("selected_date_idx", 0)
+
+    dates = [("MON", "12"), ("TUE", "13"), ("WED", "14"), ("THU", "15"), ("FRI", "16"), ("SAT", "17"), ("SUN", "18")]
+    date_label = dates[min(selected_date_idx, len(dates) - 1)]
+    date_str = f"{date_label[0]}, {date_label[1]} Nov"
+
+    # Stable transaction ID for this session
+    if "booking_txn_id" not in st.session_state:
+        import random
+        st.session_state.booking_txn_id = f"ZP-{random.randint(10000, 99999)}"
+
+    # Pull sub-court details from the court's courts list
+    sub_court = (court.get("courts") or [{}])[0]
+    court_number = sub_court.get("number", "01")
+    surface = sub_court.get("surface", court.get("surface", "Standard Surface"))
+    address = court.get("address", court.get("location", ""))
+    address_note = court.get("address_note", "")
 
     left_col, right_col = st.columns([1, 1])
 
@@ -20,7 +38,7 @@ def render():
         <div style="margin-top:2rem;">
             <div style="width:48px; height:48px; border-radius:50%; background:#cffc00; display:flex; align-items:center; justify-content:center; font-size:24px; margin-bottom:1rem;">✓</div>
             <h1 style="font-size:3rem; line-height:1.05; margin-bottom:0.5rem;">Booking<br><span style="color:#506300;">Confirmed!</span></h1>
-            <p style="font-size:15px; color:#3d4455; margin-bottom:2rem;">You're all set for <strong>{court['name']}</strong>. Your court is waiting.</p>
+            <p style="font-size:15px; color:#3d4455; margin-bottom:2rem;">You're all set for <strong>{court["name"]}</strong>. Your court is waiting.</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -51,7 +69,7 @@ def render():
         st.markdown(f"""
         <div class="zpots-card" style="margin-bottom:1rem;">
             <div style="font-family:'Lexend'; font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">TRANSACTION ID</div>
-            <div style="font-family:'Space Grotesk'; font-weight:700; font-size:1.5rem; color:#272e42;">#{booking['id']}</div>
+            <div style="font-family:'Space Grotesk'; font-weight:700; font-size:1.5rem; color:#272e42;">#{st.session_state.booking_txn_id}</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -59,19 +77,19 @@ def render():
         <div class="zpots-card" style="padding:0; overflow:hidden;">
             <div class="court-image" style="background:linear-gradient(135deg, {court['color']}, {court['color']}cc); height:140px; position:relative;">
                 <span class="ai-tag" style="position:absolute; bottom:12px; left:12px;">AI VERIFIED SLOT</span>
-                <div style="position:absolute; bottom:12px; right:12px; color:white; font-family:'Inter'; font-weight:600; font-size:14px;">{court['name']}</div>
+                <div style="position:absolute; bottom:12px; right:12px; color:white; font-family:'Inter'; font-weight:600; font-size:14px;">{court["name"]}</div>
             </div>
             <div style="padding:1rem;">
                 <div style="display:flex; gap:2rem;">
                     <div>
                         <div style="font-family:'Lexend'; font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">TIME SLOT</div>
-                        <div style="font-family:'Space Grotesk'; font-weight:700; font-size:16px;">{booking['time_start']} – {booking['time_end']}</div>
-                        <div style="font-size:12px; color:#3d4455;">Tomorrow, Oct 24</div>
+                        <div style="font-family:'Space Grotesk'; font-weight:700; font-size:16px;">{slot.get("time_start", "--:--")} – {slot.get("time_end", "--:--")}</div>
+                        <div style="font-size:12px; color:#3d4455;">{date_str}</div>
                     </div>
                     <div>
                         <div style="font-family:'Lexend'; font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">COURT DETAILS</div>
-                        <div style="font-family:'Space Grotesk'; font-weight:700; font-size:16px;">Court {booking['court_number']}</div>
-                        <div style="font-size:12px; color:#3d4455;">{booking['surface']}</div>
+                        <div style="font-family:'Space Grotesk'; font-weight:700; font-size:16px;">Court {court_number}</div>
+                        <div style="font-size:12px; color:#3d4455;">{surface}</div>
                     </div>
                 </div>
             </div>
@@ -85,8 +103,8 @@ def render():
             <div style="display:flex; align-items:center; gap:12px;">
                 <span style="font-size:1.5rem;">📍</span>
                 <div>
-                    <div style="font-family:'Inter'; font-weight:600; font-size:14px;">{booking['address']}</div>
-                    <div style="font-size:12px; color:#3d4455;">{booking['address_note']}</div>
+                    <div style="font-family:'Inter'; font-weight:600; font-size:14px;">{address}</div>
+                    <div style="font-size:12px; color:#3d4455;">{address_note}</div>
                 </div>
             </div>
             <span style="color:#506300; font-size:18px;">◆</span>
@@ -125,6 +143,12 @@ def render():
                 msg = user_input.strip()
                 st.session_state.booking_chat.append({"role": "user", "content": msg})
                 with st.spinner(""):
-                    reply = chat_with_court_assistant(st.session_state.booking_chat, court, booking)
+                    booking_ctx = {
+                        "date": date_str,
+                        "time_start": slot.get("time_start", ""),
+                        "time_end": slot.get("time_end", ""),
+                        "court_number": court_number,
+                    }
+                    reply = chat_with_court_assistant(st.session_state.booking_chat, court, booking_ctx)
                 st.session_state.booking_chat.append({"role": "assistant", "content": reply})
                 st.rerun()
