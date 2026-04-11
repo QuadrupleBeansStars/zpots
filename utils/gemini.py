@@ -1,10 +1,10 @@
 """Gemini AI helpers for ZPOTS."""
 import json
+import streamlit as st
 from google import genai
 from google.genai import types
 
-GEMINI_API_KEY = "AIzaSyAZdZrDSif-yES_xr7dH2R-SUyd4RPCngA"
-_client = genai.Client(api_key=GEMINI_API_KEY)
+_client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 _MODEL = "gemini-3-flash-preview"
 
 SPORTS_LIST = ["Badminton", "Football", "Basketball", "Padel"]
