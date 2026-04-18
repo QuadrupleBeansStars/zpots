@@ -41,18 +41,19 @@ def render():
 
     with ai_col:
         st.markdown("""
-        <div class="zpots-card-lime" style="padding:1.5rem;">
-            <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px;">
-                <span style="font-size:14px;">⚡</span>
-                <span style="font-family:'Inter'; font-weight:700; font-size:14px; color:#1a2600;">AI Revenue Optimizer</span>
-            </div>
-            <p style="font-size:13px; color:#1a2600; margin-bottom:12px;">Demand for <strong>Friday Evening</strong> is up by <strong>30%</strong>. Consider raising prices for 18:00-21:00 slots to maximize revenue.</p>
-            <div style="display:flex; align-items:center; gap:6px;">
-                <span style="color:#1a2600; font-size:12px;">●</span>
-                <span style="font-size:12px; color:#1a2600;">Apply Dynamic Pricing for this weekend</span>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+<div class="zpots-card-lime" style="padding:20px;margin-bottom:10px;">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+        <span style="font-size:14px;">⚡</span>
+        <span style="font-weight:700;font-size:14px;color:#1a2600;">
+            AI Revenue Optimizer</span>
+    </div>
+    <p style="font-size:13px;color:#1a2600;line-height:1.5;">
+        Demand for <strong>Friday Evening</strong> is up by <strong>30%</strong>.
+        Consider raising prices for 18:00–21:00 slots to maximize revenue.</p>
+    <div style="font-size:12px;color:#1a2600;margin-top:10px;">
+        ● Apply Dynamic Pricing for this weekend</div>
+</div>
+""", unsafe_allow_html=True)
         if st.button("Apply Now", type="primary", key="apply_ai", width='stretch'):
             st.toast("AI pricing applied!")
 
@@ -68,21 +69,26 @@ def render():
         """, unsafe_allow_html=True)
 
         for booking in TODAYS_BOOKINGS:
-            status_color = "#cffc00" if booking["status"] == "CONFIRMED" else "#e2e7ff" if booking["status"] == "IN PROGRESS" else "#f6f6ff"
-            status_text = "#1a2600" if booking["status"] == "CONFIRMED" else "#1a335c" if booking["status"] == "IN PROGRESS" else "#272e42"
+            status_cls = (
+                "status-confirmed" if booking["status"] == "CONFIRMED"
+                else "status-progress" if booking["status"] == "IN PROGRESS"
+                else "status-completed"
+            )
             st.markdown(f"""
-            <div class="zpots-card" style="display:flex; align-items:center; gap:1rem; margin-bottom:8px; padding:1.2rem 1.5rem;">
-                <div>
-                    <span style="font-family:'Space Grotesk'; font-weight:700; font-size:18px;">{booking['time']}</span>
-                    <div style="font-family:'Lexend'; font-size:9px; color:#3d4455;">{booking['type']}</div>
-                </div>
-                <div style="flex:1;">
-                    <div style="font-family:'Inter'; font-weight:600; font-size:14px;">{booking['title']}</div>
-                    <div style="font-size:12px; color:#3d4455;">Customer: {booking['customer']} • {booking['venue']}</div>
-                </div>
-                <span class="status-badge" style="background:{status_color}; color:{status_text}; padding:4px 12px; border-radius:999px; font-size:10px; font-weight:600;">{booking['status']}</span>
-            </div>
-            """, unsafe_allow_html=True)
+<div class="zpots-card" style="display:flex;align-items:center;gap:18px;
+             margin-bottom:8px;padding:16px 20px;">
+    <div>
+        <span class="display" style="font-size:18px;">{booking['time']}</span>
+        <div class="eyebrow" style="font-size:9px;">{booking['type']}</div>
+    </div>
+    <div style="flex:1;">
+        <div style="font-weight:600;font-size:14px;">{booking['title']}</div>
+        <div style="font-size:12px;color:#3d4455;">
+            Customer: {booking['customer']} · {booking['venue']}</div>
+    </div>
+    <span class="status-badge {status_cls}">{booking['status']}</span>
+</div>
+""", unsafe_allow_html=True)
 
         if st.button("View All Bookings →", key="view_all_bookings"):
             navigate("booking_dashboard")
