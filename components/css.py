@@ -163,13 +163,8 @@ def inject_global_css():
     }
 
     /* KPI card */
-    .kpi-card {
-        background: var(--zpots-white);
-        border-radius: 16px;
-        padding: 1.2rem;
-        box-shadow: 0 2px 12px rgba(28,37,38,0.05);
-        border: 1px solid var(--zpots-surface-container);
-    }
+    .kpi-card { background:#fff; border:1px solid #E3F0DE; border-radius:16px;
+                padding:1.2rem; box-shadow:0 2px 12px rgba(28,37,38,0.05); }
     .kpi-value {
         font-family: 'Space Grotesk', sans-serif;
         font-size: 2rem;
@@ -223,6 +218,26 @@ def inject_global_css():
         background: var(--zpots-lime);
         color: var(--zpots-primary-dark);
     }
+
+    /* Shared.css button classes — for inline HTML snippet use */
+    .btn { border-radius:999px; padding:10px 22px; font-size:14px; font-weight:500;
+           transition:all .2s; display:inline-flex; align-items:center; gap:8px;
+           cursor:pointer; border:none; font-family:'Inter',sans-serif; }
+    .btn-primary { background:linear-gradient(135deg,#cffc00,#b8e000); color:#1E4A00;
+                   font-weight:700; letter-spacing:0.03em; }
+    .btn-primary:hover { background:linear-gradient(135deg,#b8e000,#a6cc00);
+                         transform:translateY(-1px);
+                         box-shadow:0 4px 12px rgba(207,252,0,0.35); }
+    .btn-secondary { background:#F2F9EE; color:#1C2526; }
+    .btn-secondary:hover { background:#E3F0DE; }
+    .btn-ghost { color:#2E6B00; padding:8px 14px; background:none; border:none;
+                 cursor:pointer; font-size:14px; font-family:'Inter',sans-serif; }
+
+    /* Field input */
+    .field-input { width:100%; font-family:'Inter'; font-size:14px; color:#1C2526;
+                   background:#fff; border:1px solid #C4DCC0; border-radius:12px;
+                   padding:12px 14px; outline:none; }
+    .field-input:focus { border-color:#2E6B00; box-shadow:0 0 0 3px rgba(46,107,0,0.12); }
 
     /* Metric override */
     [data-testid="stMetricValue"] {
