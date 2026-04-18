@@ -12,8 +12,11 @@ def render():
     render_player_topbar()
 
     st.markdown("""
-    <h1 style="font-size:2rem; margin-bottom:0;">Find Your Court</h1>
-    <p style="font-family:'Lexend'; font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">Bangkok Precision Search</p>
+    <div style="margin-bottom:1.5rem;">
+        <div class="eyebrow" style="font-size:11px;">BANGKOK PRECISION SEARCH</div>
+        <h1 style="font-family:'Space Grotesk';font-size:2rem;font-weight:700;
+                   letter-spacing:-0.01em;color:#1c2526;margin-top:4px;">Find Your Court</h1>
+    </div>
     """, unsafe_allow_html=True)
 
     # --- Natural Language Search ---
@@ -55,7 +58,7 @@ def render():
 
         if chips:
             chips_html = " &nbsp;·&nbsp; ".join(
-                f'<span style="background:#cffc00; color:#272e42; font-family:Lexend; font-size:10px; font-weight:600; padding:3px 10px; border-radius:20px;">{c}</span>'
+                f'<span class="chip chip-selected" style="font-size:10px;padding:3px 10px;">{c}</span>'
                 for c in chips
             )
             st.markdown(
@@ -67,6 +70,27 @@ def render():
                 '<div style="margin:6px 0 10px 0; font-size:12px; color:#3d4455;">No specific filters detected — showing all courts.</div>',
                 unsafe_allow_html=True,
             )
+
+    # Inline sport chips (JSX SearchScreen pattern)
+    sports_inline = ['All', 'Badminton', 'Football', 'Basketball', 'Padel']
+    if "selected_sport" not in st.session_state:
+        st.session_state.selected_sport = "All"
+
+    chip_html = '<div style="display:flex;gap:8px;margin:12px 0 16px;align-items:center;">'
+    chip_html += '<span class="eyebrow">SPORT</span>'
+    for s in sports_inline:
+        cls = "chip-selected" if st.session_state.get("selected_sport") == s else "chip-default"
+        chip_html += f'<span class="chip {cls}">{s}</span>'
+    chip_html += '</div>'
+    st.markdown(chip_html, unsafe_allow_html=True)
+
+    sport_btn_cols = st.columns(len(sports_inline) + 2)
+    for i, s in enumerate(sports_inline):
+        with sport_btn_cols[i]:
+            if st.button(s, key=f"sport_chip_{s}",
+                         type="primary" if st.session_state.get("selected_sport") == s else "secondary"):
+                st.session_state.selected_sport = s
+                st.rerun()
 
     # Filters in sidebar
     with st.sidebar:
@@ -94,6 +118,11 @@ def render():
 
     # --- Filtering logic ---
     filtered = list(COURTS)
+
+    # Apply inline sport chip filter (when no NL filters active)
+    selected_sport = st.session_state.get("selected_sport", "All")
+    if not nl_filters and selected_sport != "All":
+        filtered = [c for c in filtered if c["sport"] == selected_sport] or list(COURTS)
 
     # Apply NL filters (take precedence over sidebar when active)
     if nl_filters:
@@ -129,11 +158,8 @@ def render():
     # Top bar with view toggle and sort
     top1, top2, top3 = st.columns([2, 1, 1])
     with top1:
-        st.markdown(f"""
-        <span style="font-family:'Lexend'; font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">
-            SHOWING {len(filtered)} COURTS IN BANGKOK
-        </span>
-        """, unsafe_allow_html=True)
+        st.markdown(f'<span class="eyebrow">SHOWING {len(filtered)} COURTS IN BANGKOK</span>',
+                    unsafe_allow_html=True)
     with top2:
         view = st.radio("View", ["Grid", "Map View"], horizontal=True, key="view_toggle", label_visibility="collapsed")
     with top3:
