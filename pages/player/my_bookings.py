@@ -10,12 +10,38 @@ def render():
     inject_global_css()
     render_player_topbar()
 
-    st.markdown('<div style="font-family:\'Lexend\'; font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">YOUR ACTIVITY</div>', unsafe_allow_html=True)
-    st.markdown("# Bookings")
+    st.markdown("""
+    <h1 style="font-family:'Space Grotesk';font-size:2rem;font-weight:700;margin:0;">
+        My Bookings</h1>
+    <p style="color:#3d4455;font-size:13px;margin-top:2px;">
+        Upcoming games and past sessions.</p>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style="display:flex;gap:8px;margin:20px 0 16px;">
+        <span class="chip chip-selected">Upcoming</span>
+        <span class="chip chip-default">Past</span>
+        <span class="chip chip-default">Cancelled</span>
+    </div>
+    """, unsafe_allow_html=True)
 
     tab1, tab2 = st.tabs(["Upcoming", "Past"])
 
     with tab1:
+        if not PLAYER_BOOKINGS:
+            st.markdown("""
+        <div style="text-align:center;padding:60px;background:#F2F9EE;border-radius:16px;">
+            <div style="font-size:48px;">🎾</div>
+            <h3 style="font-family:'Space Grotesk';font-size:20px;font-weight:600;margin-top:10px;">
+                No upcoming bookings</h3>
+            <p style="color:#3d4455;margin-top:6px;font-size:13px;">
+                Start by searching for a court.</p>
+        </div>
+        """, unsafe_allow_html=True)
+            if st.button("Find a Court", type="primary", key="empty_find_court"):
+                navigate("player_search")
+            return
+
         booking_card_player(PLAYER_BOOKINGS[0], key_prefix="upcoming_0")
         st.markdown("<div style='height:1rem;'></div>", unsafe_allow_html=True)
 
