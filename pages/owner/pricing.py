@@ -4,6 +4,7 @@ from components.css import inject_global_css, inject_owner_sidebar_css
 from components.nav import navigate, render_owner_sidebar
 from components.cards import kpi_card
 from components.charts import pricing_elasticity_chart
+from data.dummy_data import COURTS
 
 
 def render():
@@ -15,6 +16,45 @@ def render():
     <h1 style="font-size:2rem; margin-bottom:0;">Pricing Setup</h1>
     <p style="color:#3d4455; font-size:14px;">Precision control for your venue revenue. Leverage our proprietary Kinetic AI to optimize hourly rates based on real-time city demand.</p>
     """, unsafe_allow_html=True)
+
+    st.markdown("""
+<div class="zpots-card-dark" style="padding:28px;margin-bottom:18px;
+     background:linear-gradient(135deg,#1e4a00 0%,#2e6b00 50%,#cffc00 100%);">
+    <span class="ai-tag on-dark">PROJECTED THIS WEEK</span>
+    <h2 class="display" style="color:#fff;font-size:36px;margin-top:10px;">฿128,400</h2>
+    <div style="color:rgba(255,255,255,0.85);font-size:13px;margin-top:4px;">
+        ↗ +18% vs last week · AI pricing active on 14 of 19 courts</div>
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("<div style='height:1rem;'></div>", unsafe_allow_html=True)
+
+    court_grid = st.columns(3, gap="small")
+    for i, court in enumerate(COURTS[:6]):
+        with court_grid[i % 3]:
+            status_cls = "status-active" if court.get("status","ACTIVE") == "ACTIVE" \
+                         else "status-maintenance"
+            base  = court.get("price_per_hour", 450)
+            prime = court.get("prime_price",    round(base * 1.4))
+            st.markdown(f"""
+        <div class="zpots-card" style="padding:18px;margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;
+                        align-items:center;margin-bottom:10px;">
+                <span style="font-weight:600;font-size:14px;">{court['name']}</span>
+                <span class="status-badge {status_cls}">{court.get('status','Active')}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div class="zpots-card-surface" style="padding:12px;">
+                    <div class="eyebrow" style="font-size:9px;">BASE</div>
+                    <div class="display" style="font-size:18px;">฿{base}</div>
+                </div>
+                <div style="background:rgba(207,252,0,0.18);border-radius:12px;padding:12px;">
+                    <div class="eyebrow" style="font-size:9px;color:#2E6B00;">PRIME</div>
+                    <div class="display" style="font-size:18px;color:#2E6B00;">฿{prime}</div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("<div style='height:1rem;'></div>", unsafe_allow_html=True)
 
