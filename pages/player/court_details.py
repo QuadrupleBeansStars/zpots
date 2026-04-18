@@ -58,14 +58,23 @@ def render():
 
     # Amenities
     st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
+    amenity_data = [
+        ("❄️","Climate","Full AC"),
+        ("🅿️","Parking","Free (50+ Slots)"),
+        ("🚿","Facilities","Changing Rooms"),
+        ("💧","Water","Dispenser"),
+    ]
     am_cols = st.columns(4)
-    for i, amenity in enumerate(court["amenities"]):
-        with am_cols[i]:
+    for i, amenity in enumerate(court.get("amenities", amenity_data)):
+        label = amenity["label"] if isinstance(amenity, dict) else amenity_data[min(i, 3)][1]
+        value = amenity["value"] if isinstance(amenity, dict) else amenity_data[min(i, 3)][2]
+        emoji = ["❄️","🅿️","🚿","💧"][min(i, 3)]
+        with am_cols[i % 4]:
             st.markdown(f"""
-            <div class="zpots-card-surface" style="text-align:center; padding:1rem;">
-                <span style="font-size:1.3rem;">{'❄️' if i==0 else '🅿️' if i==1 else '🚿' if i==2 else '💧'}</span>
-                <div style="font-family:'Lexend'; font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455; margin-top:6px;">{amenity['label']}</div>
-                <div style="font-family:'Inter'; font-weight:600; font-size:13px; color:#272e42;">{amenity['value']}</div>
+            <div class="zpots-card-surface" style="padding:16px;text-align:center;">
+                <div style="font-size:22px;">{emoji}</div>
+                <div class="eyebrow" style="font-size:9px;margin-top:4px;">{label}</div>
+                <div style="font-weight:600;font-size:13px;color:#1c2526;margin-top:2px;">{value}</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -129,7 +138,7 @@ def render():
                         status_html = '<div style="font-size:10px; font-weight:600; color:#2e6b00;">Available</div>'
 
                     price_str = f"{slot['price']} THB" if is_available or status == "booked" else "—"
-                    border = "box-shadow:0 0 0 2px #cffc00;" if is_selected else ""
+                    border = "box-shadow:0 0 0 2px #CFFC00, 0 4px 16px rgba(28,37,38,0.06);" if is_selected else "box-shadow:0 4px 16px rgba(28,37,38,0.06);"
                     opacity = "1" if is_available else "0.45"
 
                     st.markdown(f"""
@@ -192,11 +201,11 @@ def render():
                 <span style="font-family:'Inter'; font-size:14px;">{time_display}</span>
             </div>
             <hr>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-                <span style="font-family:'Lexend'; font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">TOTAL PRICE</span>
+            <div style="margin-top:12px;">
+                <div class="eyebrow" style="font-size:10px;">TOTAL PRICE</div>
+                <div class="display" style="font-size:30px;">{total_price} THB</div>
+                <div style="font-size:11px;color:#3d4455;">INCL. TAXES</div>
             </div>
-            <div style="font-family:'Space Grotesk'; font-weight:700; font-size:2rem; color:#272e42;">{total_price} THB</div>
-            <div style="font-size:11px; color:#3d4455;">INCL. TAXES</div>
         </div>
         """, unsafe_allow_html=True)
 
