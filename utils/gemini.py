@@ -1,11 +1,10 @@
-"""Gemini AI helpers for ZPOTS."""
+"""Claude AI helpers for ZPOTS."""
 import json
+import anthropic
 import streamlit as st
-from google import genai
-from google.genai import types
 
-_client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
-_MODEL = "gemini-3-flash-preview"
+_client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
+_MODEL = "claude-opus-4-7"
 
 SPORTS_LIST = ["Badminton", "Football", "Basketball", "Padel"]
 DISTRICTS = ["Sukhumvit", "Thong Lor", "Ari", "Pathumwan", "Silom"]
@@ -31,9 +30,12 @@ Return JSON with exactly these keys (use null if not mentioned):
 Return ONLY the JSON object, no markdown, no explanation."""
 
     try:
-        response = _client.models.generate_content(model=_MODEL, contents=prompt)
-        text = response.text.strip()
-        # Strip markdown code fences if present
+        response = _client.messages.create(
+            model=_MODEL,
+            max_tokens=256,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        text = response.content[0].text.strip()
         if text.startswith("```"):
             text = text.split("```")[1]
             if text.startswith("json"):
@@ -69,8 +71,12 @@ Generate a concise venue performance summary (3–4 short paragraphs) covering:
 Use markdown formatting with **bold** for key numbers. Be specific and data-driven. Keep it under 200 words."""
 
     try:
-        response = _client.models.generate_content(model=_MODEL, contents=prompt)
-        return response.text
+        response = _client.messages.create(
+            model=_MODEL,
+            max_tokens=512,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return response.content[0].text
     except Exception as e:
         return f"Unable to generate insights at this time. Please try again. ({e})"
 
@@ -91,8 +97,12 @@ Tone: professional, energetic, appealing to Bangkok sports enthusiasts.
 Output ONLY the description text — no headings, no quotes, no extra commentary."""
 
     try:
-        response = _client.models.generate_content(model=_MODEL, contents=prompt)
-        return response.text.strip()
+        response = _client.messages.create(
+            model=_MODEL,
+            max_tokens=256,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return response.content[0].text.strip()
     except Exception as e:
         return f"Unable to generate description at this time. ({e})"
 
@@ -121,21 +131,18 @@ Booking details:
 
 Answer questions about directions, transport (BTS/MRT), parking, what to bring, dress code, rules, or anything about the venue. Be concise and friendly."""
 
-    # Build conversation history for the API
-    history = []
-    for msg in messages[:-1]:
-        role = "user" if msg["role"] == "user" else "model"
-        history.append(types.Content(role=role, parts=[types.Part(text=msg["content"])]))
-
-    last_user_msg = messages[-1]["content"] if messages else ""
+    api_messages = [
+        {"role": msg["role"], "content": msg["content"]}
+        for msg in messages
+    ]
 
     try:
-        chat = _client.chats.create(
+        response = _client.messages.create(
             model=_MODEL,
-            config=types.GenerateContentConfig(system_instruction=system_instruction),
-            history=history,
+            max_tokens=512,
+            system=system_instruction,
+            messages=api_messages,
         )
-        response = chat.send_message(last_user_msg)
-        return response.text
+        return response.content[0].text
     except Exception as e:
         return f"Sorry, I couldn't process that right now. Please try again. ({e})"
