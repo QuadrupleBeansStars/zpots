@@ -29,10 +29,7 @@ def render():
         """, unsafe_allow_html=True)
 
     duration = st.session_state.get("booking_duration", 1)
-    selected_date_idx = st.session_state.get("selected_date_idx", 0)
-    dates = [("MON", "12"), ("TUE", "13"), ("WED", "14"), ("THU", "15"), ("FRI", "16"), ("SAT", "17"), ("SUN", "18")]
-    date_info = dates[min(selected_date_idx, len(dates) - 1)]
-    date_str = f"{date_info[0]}, {date_info[1]} Nov"
+    date_str = st.session_state.get("booking_date_str", "—")
 
     start_h = int(slot["time_start"].split(":")[0])
     end_h = start_h + duration

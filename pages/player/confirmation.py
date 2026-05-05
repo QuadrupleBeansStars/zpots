@@ -1,8 +1,10 @@
 """Booking Confirmation Screen."""
+from datetime import date
 import streamlit as st
 from components.css import inject_global_css
 from components.nav import navigate, render_player_topbar
 from data.dummy_data import COURTS
+from data.database import create_booking
 from utils.gemini import chat_with_court_assistant
 
 
@@ -10,19 +12,29 @@ def render():
     inject_global_css()
     render_player_topbar()
 
-    # Use data from the booking flow, not hardcoded dummy data
+    if not st.session_state.get("logged_in"):
+        navigate("player_login")
+        return
+
     court = st.session_state.get("booking_court", COURTS[0])
     slot = st.session_state.get("booking_slot", {})
-    selected_date_idx = st.session_state.get("selected_date_idx", 0)
+    date_str = st.session_state.get("booking_date_str", "—")
 
-    dates = [("MON", "12"), ("TUE", "13"), ("WED", "14"), ("THU", "15"), ("FRI", "16"), ("SAT", "17"), ("SUN", "18")]
-    date_label = dates[min(selected_date_idx, len(dates) - 1)]
-    date_str = f"{date_label[0]}, {date_label[1]} Nov"
-
-    # Stable transaction ID for this session
-    if "booking_txn_id" not in st.session_state:
-        import random
-        st.session_state.booking_txn_id = f"ZP-{random.randint(10000, 99999)}"
+    # Write booking to DB exactly once per booking flow
+    if not st.session_state.get("booking_persisted", False):
+        txn_id = create_booking(
+            player_id   = st.session_state.user_id,
+            player_name = st.session_state.user_name,
+            court_id    = court.get("id", "bbc-01"),
+            court_name  = court.get("name", ""),
+            date_iso    = st.session_state.get("booking_date_iso", date.today().isoformat()),
+            time_start  = slot.get("time_start", ""),
+            time_end    = slot.get("time_end", ""),
+            duration    = st.session_state.get("booking_duration", 1),
+            total_price = int(st.session_state.get("booking_total_final", 0)),
+        )
+        st.session_state.booking_txn_id   = txn_id
+        st.session_state.booking_persisted = True
 
     # Pull sub-court details from the court's courts list
     sub_court = (court.get("courts") or [{}])[0]
@@ -144,9 +156,9 @@ def render():
                 st.session_state.booking_chat.append({"role": "user", "content": msg})
                 with st.spinner(""):
                     booking_ctx = {
-                        "date": date_str,
-                        "time_start": slot.get("time_start", ""),
-                        "time_end": slot.get("time_end", ""),
+                        "date":         date_str,
+                        "time_start":   slot.get("time_start", ""),
+                        "time_end":     slot.get("time_end", ""),
                         "court_number": court_number,
                     }
                     reply = chat_with_court_assistant(st.session_state.booking_chat, court, booking_ctx)

@@ -10,6 +10,15 @@ def navigate(page_name, **kwargs):
     st.rerun()
 
 
+def _logout():
+    for key in ("logged_in", "user_id", "user_name", "user_email", "booking_persisted",
+                "booking_court", "booking_slot", "booking_date_iso", "booking_date_str",
+                "booking_txn_id", "booking_total_final", "booking_chat"):
+        st.session_state.pop(key, None)
+    st.session_state.page = "landing"
+    st.session_state.flow = None
+
+
 def render_player_topbar():
     """Render the player top navigation bar."""
     current = st.session_state.get("page", "player_home")
@@ -34,7 +43,11 @@ def render_player_topbar():
     with cols[4]:
         st.button("", icon=":material/notifications:", key="nav_notif")
     with cols[5]:
-        st.button("", icon=":material/person:", key="nav_profile")
+        user_name = st.session_state.get("user_name", "")
+        label = user_name[0].upper() if user_name else ""
+        if st.button(label or "", icon=":material/person:", key="nav_profile"):
+            _logout()
+            st.rerun()
 
 
 def render_owner_sidebar():
@@ -82,4 +95,4 @@ def render_owner_sidebar():
         st.divider()
         st.button("Back to home", icon=":material/logout:", key="sidebar_logout",
                   use_container_width=True,
-                  on_click=navigate, kwargs={"page_name": "landing"})
+                  on_click=_logout)

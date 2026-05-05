@@ -189,24 +189,29 @@ COURTS = [
 ]
 
 
-def get_time_slots(court_id="bbc-01"):
-    """Generate time slots for a given court."""
+def get_time_slots(court_id="bbc-01", date_iso: str | None = None):
+    """Generate time slots for a given court, marking real DB bookings as booked."""
+    from data.database import get_booked_slots
+    db_booked: set[str] = get_booked_slots(court_id, date_iso) if date_iso else set()
+
     slots = []
     base_prices = {"bbc-01": 450, "sky-02": 1200, "dwn-03": 600, "pdl-04": 800, "ryl-05": 950, "imp-06": 350}
     base = base_prices.get(court_id, 450)
     for hour in range(8, 23):
         is_peak = 17 <= hour <= 21
         price = int(base * 1.4) if is_peak else base
-        if hour in [11, 19]:
+        time_start = f"{hour:02d}:00"
+        if time_start in db_booked:
+            status = "booked"
+        elif hour in [11, 19]:
             status = "booked"
         elif hour == 14:
             status = "maintenance"
         else:
             status = "available"
-        # AI pricing tag for select slots
         ai_tag = "AI PRECISION PRICING" if hour in [10, 18] else None
         slots.append({
-            "time_start": f"{hour:02d}:00",
+            "time_start": time_start,
             "time_end": f"{hour+1:02d}:00",
             "price": price,
             "status": status,

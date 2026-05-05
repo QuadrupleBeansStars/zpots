@@ -1,8 +1,12 @@
 """Check-in QR Code Screen."""
+from datetime import date as date_cls
 import streamlit as st
 from components.css import inject_global_css
 from components.nav import navigate, render_player_topbar
-from data.dummy_data import PLAYER_BOOKINGS
+from data.dummy_data import COURTS
+from data.database import get_bookings_by_user
+
+COURT_LOOKUP = {c["id"]: c for c in COURTS}
 
 try:
     import qrcode
@@ -16,8 +20,42 @@ def render():
     inject_global_css()
     render_player_topbar()
 
-    booking_id = st.session_state.get("selected_booking_id", "ZP-94821")
-    booking = next((b for b in PLAYER_BOOKINGS if b["id"] == booking_id), PLAYER_BOOKINGS[0])
+    player_id = st.session_state.get("user_id")
+    if not player_id:
+        navigate("player_login")
+        return
+
+    booking_id = st.session_state.get("selected_booking_id")
+    raw_bookings = get_bookings_by_user(player_id)
+    if not raw_bookings:
+        st.warning("No bookings found.")
+        if st.button("← Back to My Bookings", key="back_no_bk"):
+            navigate("my_bookings")
+        return
+
+    def _enrich(bk):
+        bk = dict(bk)
+        court = COURT_LOOKUP.get(bk["court_id"], {})
+        try:
+            d = date_cls.fromisoformat(bk["date"])
+            bk["date"] = d.strftime("%a, %d %b")
+        except Exception:
+            pass
+        bk.setdefault("qr_code",      bk["txn_id"])
+        bk.setdefault("court_number", "01")
+        bk.setdefault("surface",      court.get("surface", ""))
+        bk.setdefault("address",      court.get("address", court.get("location", "")))
+        dur = bk.get("duration", 1)
+        bk.setdefault("duration_min", dur * 60)
+        try:
+            sh = int(bk.get("time_start", "0:00").split(":")[0])
+            bk.setdefault("time_end", f"{sh + dur:02d}:00")
+        except Exception:
+            pass
+        return bk
+
+    bookings = [_enrich(b) for b in raw_bookings]
+    booking = next((b for b in bookings if b["txn_id"] == booking_id), bookings[0])
 
     st.markdown('<span class="ai-tag">ACTIVE SESSION</span>', unsafe_allow_html=True)
     st.markdown("""

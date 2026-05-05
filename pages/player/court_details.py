@@ -1,5 +1,6 @@
 """Court Details & Slot Selection."""
 import streamlit as st
+from datetime import date as date_cls, timedelta
 from components.css import inject_global_css
 from components.nav import navigate, render_player_topbar
 from data.dummy_data import COURTS, get_time_slots
@@ -15,7 +16,6 @@ def render():
 
     court_id = st.session_state.get("selected_court_id", "bbc-01")
     court = next((c for c in COURTS if c["id"] == court_id), COURTS[0])
-    slots = get_time_slots(court_id)
 
     # Initialize session state for selections
     if "selected_date_idx" not in st.session_state:
@@ -24,6 +24,12 @@ def render():
         st.session_state.selected_slot_idx = None
     if "booking_duration" not in st.session_state:
         st.session_state.booking_duration = 1
+
+    # Build real 7-day date list starting from today
+    today = date_cls.today()
+    dates = [today + timedelta(days=i) for i in range(7)]
+    selected_date = dates[st.session_state.selected_date_idx]
+    slots = get_time_slots(court_id, date_iso=selected_date.isoformat())
 
     # Court images
     st.markdown(f"""
@@ -91,13 +97,14 @@ def render():
         """, unsafe_allow_html=True)
 
         # Date selector
-        dates = [("MON", "12"), ("TUE", "13"), ("WED", "14"), ("THU", "15"), ("FRI", "16"), ("SAT", "17"), ("SUN", "18")]
         date_cols = st.columns(7)
-        for i, (day, num) in enumerate(dates):
+        for i, d in enumerate(dates):
             with date_cols[i]:
                 btn_type = "primary" if st.session_state.selected_date_idx == i else "secondary"
-                if st.button(f"{day}\n{num}", key=f"date_{i}", width='stretch', type=btn_type):
+                label = f"{d.strftime('%a').upper()[:3]}\n{d.strftime('%d')}"
+                if st.button(label, key=f"date_{i}", width='stretch', type=btn_type):
                     st.session_state.selected_date_idx = i
+                    st.session_state.selected_slot_idx = None
                     st.rerun()
 
         # Duration selector
@@ -170,8 +177,8 @@ def render():
 
     with summary_col:
         selected_slot = slots[st.session_state.selected_slot_idx] if st.session_state.selected_slot_idx is not None else None
-        date_info = dates[st.session_state.selected_date_idx]
         dur = st.session_state.get("booking_duration", 1)
+        date_display = selected_date.strftime("%a, %d %b")
 
         total_price = selected_slot["price"] * dur if selected_slot else 0
 
@@ -194,7 +201,7 @@ def render():
             <h3 style="font-size:1rem; margin-bottom:1rem;">BOOKING SUMMARY</h3>
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
                 <span>📅</span>
-                <span style="font-family:'Inter'; font-size:14px;">{date_info[0].capitalize()}, {date_info[1]}th Nov</span>
+                <span style="font-family:'Inter'; font-size:14px;">{date_display}</span>
             </div>
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
                 <span>🕐</span>
@@ -213,10 +220,19 @@ def render():
         if st.button("PROCEED TO BOOKING →", type="primary", width='stretch', key="proceed_booking"):
             if selected_slot is None:
                 st.toast("Please select a time slot first.", icon="⚠️")
+            elif not st.session_state.get("logged_in"):
+                st.toast("Please log in to book a court.", icon="⚠️")
+                navigate("player_login")
             else:
-                st.session_state.booking_court = court
-                st.session_state.booking_slot = selected_slot
-                st.session_state.booking_total = total_price
+                start_h = int(selected_slot["time_start"].split(":")[0])
+                end_h = start_h + dur
+                actual_end = f"{end_h:02d}:00"
+                st.session_state.booking_court      = court
+                st.session_state.booking_slot       = {**selected_slot, "time_end": actual_end}
+                st.session_state.booking_total      = total_price
+                st.session_state.booking_date_iso   = selected_date.isoformat()
+                st.session_state.booking_date_str   = date_display
+                st.session_state.booking_persisted  = False
                 navigate("player_booking")
 
         st.markdown("""

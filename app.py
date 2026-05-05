@@ -30,6 +30,9 @@ from pages.owner.ai_insights import render as ai_insights
 from pages.owner.optimization import render as optimization
 
 from components.css import inject_global_css
+from data.database import init_db
+
+init_db()
 
 # Page registry
 PAGE_REGISTRY = {
@@ -59,6 +62,9 @@ for key, default in [
     ("page", "landing"),
     ("flow", None),
     ("logged_in", False),
+    ("user_id", None),
+    ("user_name", None),
+    ("user_email", None),
     ("selected_court_id", None),
     ("selected_booking_id", None),
     ("selected_slot_idx", None),

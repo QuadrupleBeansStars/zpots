@@ -2,6 +2,7 @@
 import streamlit as st
 from components.css import inject_global_css, inject_login_css
 from components.nav import navigate
+from data.database import get_user_by_email, verify_password
 
 
 def render():
@@ -35,14 +36,24 @@ def render():
         password = st.text_input("PASSWORD", type="password", placeholder="••••••••", key="owner_password")
 
         if st.button("ENTER CONSOLE →", type="primary", width='stretch', key="owner_login_btn"):
-            st.session_state.logged_in = True
-            st.session_state.flow = "owner"
-            navigate("owner_dashboard")
+            user = get_user_by_email(email.strip().lower()) if email.strip() else None
+            if user is None or not verify_password(user, password):
+                st.error("Invalid credentials.")
+            elif user["role"] != "owner":
+                st.error("Player account detected. Use Player login.")
+            else:
+                st.session_state.logged_in  = True
+                st.session_state.user_id    = user["id"]
+                st.session_state.user_name  = user["name"]
+                st.session_state.user_email = user["email"]
+                st.session_state.flow = "owner"
+                navigate("owner_dashboard")
 
         st.markdown("""
         <div style="text-align:center;margin-top:1.5rem;margin-bottom:8px;
                     font-size:13px;color:#3d4455;">
             New operator?
-            <strong style="color:#1E4A00;cursor:pointer;">Manage your venues</strong>
+            <strong style="color:#1E4A00;cursor:pointer;">Contact us to register your venue.</strong>
+            <br><small>Demo: owner@zpots.ai / owner123</small>
         </div>
         """, unsafe_allow_html=True)
