@@ -2,6 +2,7 @@
 import streamlit as st
 from components.css import inject_global_css, inject_owner_sidebar_css
 from components.nav import navigate, render_owner_sidebar
+from utils.ml_inference import get_demand_forecast
 
 
 def render():
@@ -19,11 +20,26 @@ def render():
     rec_col, outcome_col = st.columns([1.5, 1])
 
     with rec_col:
-        st.markdown("""
+        forecast = get_demand_forecast()
+        if not forecast.empty:
+            agg = forecast.groupby(["day_of_week","hour"])["predicted_bookings"].mean().reset_index()
+            top = agg.sort_values("predicted_bookings", ascending=False).iloc[0]
+            overall_avg = agg["predicted_bookings"].mean()
+            uplift_pct = int(round((top["predicted_bookings"] - overall_avg) / max(overall_avg, 1e-6) * 100))
+            dow_labels = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+            headline_day = dow_labels[int(top["day_of_week"])]
+            headline_hour = f"{int(top['hour']):02d}:00"
+        else:
+            headline_day, headline_hour, uplift_pct = "Sunday", "08:00", 20
+
+        st.markdown(f"""
         <div class="zpots-card" style="padding:2rem;">
             <span class="ai-tag" style="margin-bottom:12px;">LIVE OPPORTUNITY</span>
-            <h2 style="font-size:1.8rem; line-height:1.15; margin-top:12px;">Adjust availability for<br><span style="color:#506300; font-style:italic;">Sunday Morning</span> to capture<br><span style="color:#506300;">+20%</span> demand.</h2>
-            <div style="margin-top:1rem; font-size:20px; color:#506300; font-family:'Space Grotesk'; font-weight:700;">+20%<br><span style="font-size:12px; font-weight:400; color:#3d4455;">REVENUE LIFT</span></div>
+            <h2 style="font-size:1.8rem; line-height:1.15; margin-top:12px;">Open up<br>
+                <span style="color:#506300; font-style:italic;">{headline_day} {headline_hour}</span> to capture<br>
+                <span style="color:#506300;">+{uplift_pct}%</span> demand.</h2>
+            <div style="margin-top:1rem; font-size:20px; color:#506300; font-family:'Space Grotesk'; font-weight:700;">+{uplift_pct}%<br>
+                <span style="font-size:12px; font-weight:400; color:#3d4455;">REVENUE LIFT</span></div>
         </div>
         """, unsafe_allow_html=True)
 

@@ -36,3 +36,7 @@ wheels/
 # OS
 .DS_Store
 Thumbs.db
+zpots.db
+
+# ML
+ml/notebooks/.ipynb_checkpoints/

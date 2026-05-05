@@ -1,7 +1,9 @@
 """AI Insights - Demand analysis and predictions."""
 import streamlit as st
+import plotly.express as px
 from components.css import inject_global_css
 from components.nav import render_owner_sidebar
+from utils.ml_inference import get_demand_forecast
 
 
 def render():
@@ -35,28 +37,39 @@ def render():
     </div>
     """, unsafe_allow_html=True)
 
+    # Build demand forecast heatmap figure
+    forecast = get_demand_forecast()
+    fig = None
+    if not forecast.empty:
+        pivot = (forecast.groupby(["day_of_week", "hour"])["predicted_bookings"]
+                         .mean().reset_index()
+                         .pivot(index="day_of_week", columns="hour", values="predicted_bookings"))
+        dow_labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        pivot.index = [dow_labels[i] for i in pivot.index]
+        fig = px.imshow(
+            pivot, color_continuous_scale=["#F2F9EE", "#CFFC00", "#506300"],
+            aspect="auto", labels=dict(x="Hour", y="Day", color="Predicted bookings"),
+        )
+        fig.update_layout(height=240, margin=dict(l=0, r=0, t=10, b=0))
+
     # Heatmap + Utilization row
     heat_col, util_col = st.columns([1.5, 1], gap="medium")
 
     with heat_col:
+        st.markdown('<div class="zpots-card" style="padding:20px;">', unsafe_allow_html=True)
         st.markdown("""
-        <div class="zpots-card" style="padding:20px;">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
-                <div>
-                    <h3 class="display" style="font-size:16px;">Bangkok Demand Heatmap</h3>
-                    <div class="eyebrow" style="margin-top:2px;">LIVE AI PROJECTION · NEXT 24 HOURS</div>
-                </div>
-                <div style="display:flex;gap:4px;">
-                    <span class="status-badge status-cancelled">CRITICAL</span>
-                    <span class="status-badge status-active">OPTIMAL</span>
-                </div>
-            </div>
-            <div style="height:200px;background:radial-gradient(circle at 30% 40%,#CFFC00,transparent 40%),
-                         radial-gradient(circle at 70% 60%,#FFDDCC,transparent 40%),
-                         radial-gradient(circle at 50% 30%,#E2E7FF,transparent 40%),#F2F9EE;
-                         border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                <span class="eyebrow">DEMAND DENSITY PROJECTION</span>
-            </div>
+<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+    <div>
+        <h3 class="display" style="font-size:16px;">Bangkok Demand Heatmap</h3>
+        <div class="eyebrow" style="margin-top:2px;">7-DAY FORECAST · MODEL: RANDOM FOREST</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+        if fig is not None:
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("Demand forecast not available — run notebook 01 to generate predictions.")
+        st.markdown("""
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;">
                 <div class="zpots-card-surface" style="padding:14px;text-align:center;">
                     <div class="eyebrow" style="font-size:9px;">Sukhumvit</div>
@@ -74,8 +87,8 @@ def render():
                     <span class="status-badge status-cancelled">Saturated</span>
                 </div>
             </div>
-        </div>
         """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with util_col:
         st.markdown("""
