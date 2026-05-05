@@ -145,6 +145,67 @@ print(f"Train period: {df['timestamp'].iloc[0]} → {df['timestamp'].iloc[split_
 print(f"Test  period: {df['timestamp'].iloc[split_idx]} → {df['timestamp'].iloc[-1]}")\
 """))
 
+# ── Section 6: Linear Regression baseline ────────────────────────────────────
+cells.append(nbformat.v4.new_markdown_cell("""\
+## 5. Baseline model: Linear Regression
+
+**Always start with a simple model.** It gives you a yardstick for whether
+fancier models are actually helping, and it's easy to debug.
+
+Linear Regression assumes the answer is a weighted sum of the features:
+`bookings ≈ w1·feature1 + w2·feature2 + ...`. Simple, fast, very interpretable.
+
+We measure error with:
+- **MAE** (Mean Absolute Error): "on average we're off by this many bookings"
+- **RMSE** (Root Mean Squared Error): like MAE but penalizes big misses harder\
+"""))
+
+cells.append(nbformat.v4.new_code_cell("""\
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, root_mean_squared_error
+
+lin = LinearRegression()
+lin.fit(X_train, y_train)
+pred_lin = lin.predict(X_test)
+
+mae = mean_absolute_error(y_test, pred_lin)
+rmse = root_mean_squared_error(y_test, pred_lin)
+print(f"Linear  MAE: {mae:.3f}   RMSE: {rmse:.3f}")\
+"""))
+
+cells.append(nbformat.v4.new_code_cell("""\
+plt.figure(figsize=(5,5))
+plt.scatter(y_test, pred_lin, alpha=0.2, s=8)
+plt.plot([0, y_test.max()], [0, y_test.max()], "r--", label="perfect")
+plt.xlabel("actual bookings"); plt.ylabel("predicted bookings")
+plt.title("Linear Regression: predicted vs actual"); plt.legend(); plt.show()\
+"""))
+
+# ── Section 7: Residual analysis ─────────────────────────────────────────────
+cells.append(nbformat.v4.new_markdown_cell("""\
+## 6. Where does the linear model fail?
+
+A **residual** is `actual − predicted`. Plotting residuals by hour shows us
+*when* the model is wrong, not just *how much*.\
+"""))
+
+cells.append(nbformat.v4.new_code_cell("""\
+test_df = df.iloc[split_idx:].copy()
+test_df["pred"] = pred_lin
+test_df["residual"] = test_df["bookings"] - test_df["pred"]
+
+test_df.groupby("hour")["residual"].mean().plot(
+    kind="bar", figsize=(8,3), title="Avg residual by hour (positive = under-predicted)"
+)
+plt.axhline(0, color="black", lw=0.8); plt.show()\
+"""))
+
+cells.append(nbformat.v4.new_markdown_cell("""\
+The linear model **systematically under-predicts** the evening peak. Linear models
+can't easily capture interactions like "evening AND weekend AND not rainy".
+We need a model that handles non-linear feature interactions automatically.\
+"""))
+
 nb.cells = cells
 
 out_path = Path(__file__).parent / "01_demand_forecasting.ipynb"
