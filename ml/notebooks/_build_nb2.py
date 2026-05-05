@@ -191,6 +191,82 @@ cells.append(nbformat.v4.new_markdown_cell("""\
 (repeat customers show up); `lead_time_days` positive (long lead = forget).\
 """))
 
+# ── Section 8: Random Forest classifier ──────────────────────────────────────
+cells.append(nbformat.v4.new_markdown_cell("""\
+## 7. Upgrade: Random Forest classifier
+
+Same forest idea as Notebook 1, but predicting a class instead of a number.
+Tree-based models don't need scaled features — we feed them the raw matrix.\
+"""))
+
+cells.append(nbformat.v4.new_code_cell("""\
+from sklearn.ensemble import RandomForestClassifier
+
+rf = RandomForestClassifier(
+    n_estimators=300, max_depth=10, class_weight="balanced",
+    random_state=42, n_jobs=-1,
+)
+rf.fit(X_train, y_train)
+prob_rf = rf.predict_proba(X_test)[:, 1]
+
+print(f"Logistic AUC: {roc_auc_score(y_test, prob_logit):.3f}")
+print(f"Forest   AUC: {roc_auc_score(y_test, prob_rf):.3f}")\
+"""))
+
+# ── Section 9: Threshold tuning ───────────────────────────────────────────────
+cells.append(nbformat.v4.new_markdown_cell("""\
+## 8. Picking the Low / Medium / High thresholds
+
+The model gives us a probability between 0 and 1. The owner UI shows three
+tiers. We pick cutoffs by looking at how the population splits.
+
+A reasonable starting point: bottom ~70% of risk = Low, next ~20% = Medium,
+top ~10% = High. Check what probabilities those quantiles correspond to.\
+"""))
+
+cells.append(nbformat.v4.new_code_cell("""\
+q70, q90 = np.quantile(prob_rf, [0.70, 0.90])
+print(f"Low/Med cutoff (70th pct): {q70:.3f}")
+print(f"Med/High cutoff (90th pct): {q90:.3f}")
+
+def tier(p):
+    if p < q70: return "Low"
+    if p < q90: return "Medium"
+    return "High"
+
+tiers = pd.Series([tier(p) for p in prob_rf])
+miss_by_tier = pd.DataFrame({"tier": tiers, "missed": y_test.values}).groupby("tier")["missed"].mean()
+print("\\nActual miss rate per tier:")
+print(miss_by_tier.round(3))\
+"""))
+
+cells.append(nbformat.v4.new_markdown_cell("""\
+**Sanity check:** High tier should have a substantially higher actual miss rate
+than Low. If the tiers don't separate, the model has no real signal — we'd need
+better features.\
+"""))
+
+# ── Section 10: Save artifact ─────────────────────────────────────────────────
+cells.append(nbformat.v4.new_markdown_cell("""\
+## 9. Save the model
+
+We save the trained forest **and** the cutoff thresholds, so the app uses
+exactly the same tier logic you saw here.\
+"""))
+
+cells.append(nbformat.v4.new_code_cell("""\
+import joblib, os
+os.makedirs("../models", exist_ok=True)
+artifact = {
+    "model": rf,
+    "feature_columns": list(features.columns),
+    "threshold_low_med": float(q70),
+    "threshold_med_high": float(q90),
+}
+joblib.dump(artifact, "../models/noshow_rf.pkl")
+print("Saved noshow_rf.pkl")\
+"""))
+
 # ── Assemble & write ──────────────────────────────────────────────────────────
 nb.cells = cells
 
