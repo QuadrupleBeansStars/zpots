@@ -206,6 +206,51 @@ can't easily capture interactions like "evening AND weekend AND not rainy".
 We need a model that handles non-linear feature interactions automatically.\
 """))
 
+# ── Section 8: Random Forest Regressor ───────────────────────────────────────
+cells.append(nbformat.v4.new_markdown_cell("""\
+## 7. Upgrade: Random Forest
+
+A **Random Forest** is a collection of decision trees. Each tree learns a different
+set of "if-then" rules; the forest averages their predictions. This naturally
+captures interactions like "evening AND weekend".
+
+`n_estimators=200` means 200 trees. More = better up to a point, slower to train.\
+"""))
+
+cells.append(nbformat.v4.new_code_cell("""\
+from sklearn.ensemble import RandomForestRegressor
+
+rf = RandomForestRegressor(n_estimators=200, max_depth=12, random_state=42, n_jobs=-1)
+rf.fit(X_train, y_train)
+pred_rf = rf.predict(X_test)
+
+mae_rf = mean_absolute_error(y_test, pred_rf)
+rmse_rf = root_mean_squared_error(y_test, pred_rf)
+print(f"Linear  MAE: {mae:.3f}   RMSE: {rmse:.3f}")
+print(f"Forest  MAE: {mae_rf:.3f}   RMSE: {rmse_rf:.3f}")\
+"""))
+
+# ── Section 9: Feature importance ────────────────────────────────────────────
+cells.append(nbformat.v4.new_markdown_cell("""\
+## 8. Which features matter?
+
+Random Forests can tell us which features drove the prediction. If we trained
+a model and the most important feature was random noise, we'd know something
+was wrong.\
+"""))
+
+cells.append(nbformat.v4.new_code_cell("""\
+importances = pd.Series(rf.feature_importances_, index=features.columns)
+top = importances.sort_values(ascending=True).tail(15)
+top.plot(kind="barh", figsize=(7,5), title="Top 15 feature importances", color="#506300")
+plt.show()\
+"""))
+
+cells.append(nbformat.v4.new_markdown_cell("""\
+**Sanity check:** `hour`, `bookings_lag_24h`, and `day_of_week` should dominate.
+If `is_holiday` (which we made very sparse) ranked first, the model probably overfit.\
+"""))
+
 nb.cells = cells
 
 out_path = Path(__file__).parent / "01_demand_forecasting.ipynb"
