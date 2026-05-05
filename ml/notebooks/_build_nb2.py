@@ -122,6 +122,75 @@ X_train, X_test, y_train, y_test = train_test_split(
 print(f"Train miss rate: {y_train.mean():.3f}   Test miss rate: {y_test.mean():.3f}")\
 """))
 
+# ── Section 6: Logistic Regression baseline ───────────────────────────────────
+cells.append(nbformat.v4.new_markdown_cell("""\
+## 5. Baseline: Logistic Regression
+
+Despite the name, **logistic regression is a classifier**. It outputs a
+probability between 0 and 1 by squashing a weighted sum through a sigmoid:
+
+`P(missed) = 1 / (1 + exp(−(w·x + b)))`
+
+We evaluate with:
+- **Confusion matrix** — counts of TP / FP / FN / TN
+- **Precision** — of the bookings we *flag* as risky, how many actually missed
+- **Recall** — of the *actual* missed bookings, how many we caught
+- **ROC curve / AUC** — overall ranking quality, threshold-independent\
+"""))
+
+cells.append(nbformat.v4.new_code_cell("""\
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    confusion_matrix, classification_report, roc_auc_score, roc_curve
+)
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+X_train_s = scaler.fit_transform(X_train)
+X_test_s  = scaler.transform(X_test)
+
+logit = LogisticRegression(max_iter=1000, class_weight="balanced")
+logit.fit(X_train_s, y_train)
+pred_logit = logit.predict(X_test_s)
+prob_logit = logit.predict_proba(X_test_s)[:, 1]
+
+print("Confusion matrix:\\n", confusion_matrix(y_test, pred_logit))
+print("\\n", classification_report(y_test, pred_logit, target_names=["showed","missed"]))
+print(f"ROC AUC: {roc_auc_score(y_test, prob_logit):.3f}")\
+"""))
+
+cells.append(nbformat.v4.new_code_cell("""\
+fpr, tpr, _ = roc_curve(y_test, prob_logit)
+plt.figure(figsize=(5,5))
+plt.plot(fpr, tpr, label=f"Logit AUC={roc_auc_score(y_test, prob_logit):.2f}")
+plt.plot([0,1],[0,1],"k--", lw=0.8)
+plt.xlabel("False Positive Rate"); plt.ylabel("True Positive Rate")
+plt.title("ROC curve"); plt.legend(); plt.show()\
+"""))
+
+# ── Section 7: Interpret coefficients ─────────────────────────────────────────
+cells.append(nbformat.v4.new_markdown_cell("""\
+## 6. What did the model learn?
+
+Logistic regression coefficients are interpretable: a **positive** coefficient
+means the feature pushes the prediction *toward* "missed". A **negative** one
+pushes toward "showed up".\
+"""))
+
+cells.append(nbformat.v4.new_code_cell("""\
+coefs = pd.Series(logit.coef_[0], index=features.columns).sort_values()
+fig, ax = plt.subplots(figsize=(6,5))
+coefs.head(8).plot(kind="barh", ax=ax, color="#2e6b00", label="pushes toward SHOW")
+coefs.tail(8).plot(kind="barh", ax=ax, color="#c62828", label="pushes toward MISS")
+plt.title("Logistic regression coefficients (top push in each direction)")
+plt.legend(); plt.show()\
+"""))
+
+cells.append(nbformat.v4.new_markdown_cell("""\
+**Expected:** `is_repeat_customer` should have a strong negative coefficient
+(repeat customers show up); `lead_time_days` positive (long lead = forget).\
+"""))
+
 # ── Assemble & write ──────────────────────────────────────────────────────────
 nb.cells = cells
 
