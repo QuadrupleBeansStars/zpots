@@ -137,6 +137,7 @@ def inject_global_css():
     .status-booked { background: rgba(207,252,0,0.18); color: #2e6b00; }
     .status-active { background: rgba(207,252,0,0.22); color: #2e6b00; }
     .status-maintenance { background: rgba(230,81,0,0.12); color: #e65100; }
+    .status-warning  { background: rgba(230,81,0,0.16); color: #c95400; }
 
     .status-badge {
         display: inline-block;
