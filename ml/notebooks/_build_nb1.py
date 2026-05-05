@@ -251,6 +251,76 @@ cells.append(nbformat.v4.new_markdown_cell("""\
 If `is_holiday` (which we made very sparse) ranked first, the model probably overfit.\
 """))
 
+## Section 9: Feature importance (already above) ends here
+
+# ── Section 10: Forecast generation + save artifacts ─────────────────────────
+cells.append(nbformat.v4.new_markdown_cell("""\
+## 9. Generate next week's forecast
+
+We build a synthetic feature matrix for the next 7 days × 24 hours × every court,
+predict, and save to `demand_predictions.parquet`. The Streamlit app reads this
+file directly — no model loading needed for the heatmap.\
+"""))
+
+cells.append(nbformat.v4.new_code_cell("""\
+import joblib, os, sys
+sys.path.insert(0, os.path.abspath("../.."))
+from data.dummy_data import COURTS
+from datetime import datetime, timedelta
+
+future_rows = []
+start_day = (datetime.now() + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+for court in COURTS:
+    for d in range(7):
+        for h in range(8, 23):
+            ts = start_day + timedelta(days=d, hours=h)
+            price = court["prime_price"] if 18 <= h <= 21 else court["price_per_hour"]
+            future_rows.append({
+                "timestamp": ts,
+                "court_id": court["id"],
+                "sport": court["sport"],
+                "district": court["district"],
+                "day_of_week": ts.weekday(),
+                "hour": h,
+                "is_weekend": ts.weekday() >= 5,
+                "is_holiday": False,
+                "weather": "sunny",
+                "price": int(price),
+                "n_courts": max(1, len(court.get("courts", [{"a":1}]))),
+                "bookings_lag_24h": 0,
+            })
+
+future = pd.DataFrame(future_rows)
+future_features = pd.get_dummies(
+    future[["court_id","sport","district","day_of_week","hour",
+            "is_weekend","is_holiday","weather","price","n_courts","bookings_lag_24h"]],
+    columns=["court_id","sport","district","weather"],
+    drop_first=True,
+)
+# Align columns with training features (missing → 0)
+future_features = future_features.reindex(columns=features.columns, fill_value=0)
+future["predicted_bookings"] = rf.predict(future_features).clip(min=0)
+
+out = future[["timestamp","court_id","day_of_week","hour","predicted_bookings"]]
+os.makedirs("../models", exist_ok=True)
+out.to_parquet("../models/demand_predictions.parquet", index=False)
+joblib.dump(rf, "../models/demand_rf.pkl")
+print("Saved:", os.listdir("../models"))
+out.head()\
+"""))
+
+cells.append(nbformat.v4.new_markdown_cell("""\
+**Quick sanity check:** average predicted bookings by hour should still show
+the evening peak. If it's flat, something went wrong with feature alignment.\
+"""))
+
+cells.append(nbformat.v4.new_code_cell("""\
+out.groupby("hour")["predicted_bookings"].mean().plot(
+    kind="bar", figsize=(8,3), title="Forecast: avg predicted bookings by hour"
+)
+plt.show()\
+"""))
+
 nb.cells = cells
 
 out_path = Path(__file__).parent / "01_demand_forecasting.ipynb"
