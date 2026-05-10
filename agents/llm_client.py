@@ -38,7 +38,7 @@ def _get_client() -> Union[AzureOpenAI, OpenAI]:
 
 
 def chat(messages: list[dict], tools: list[dict], system: str):
-    """Single turn against the model. Returns the raw OpenAI ChatCompletion object.
+    """Single tool-calling turn. Returns the raw OpenAI ChatCompletion object.
 
     `messages` is the running conversation (user/assistant/tool turns). `system`
     is prepended as the first system message. `tools` is OpenAI tool schema
@@ -51,3 +51,21 @@ def chat(messages: list[dict], tools: list[dict], system: str):
         tools=tools or None,
         max_tokens=MAX_TOKENS,
     )
+
+
+def complete(user_prompt: str, system: str | None = None, max_tokens: int = 512) -> str:
+    """One-shot text generation for non-tool callers (search-query parsing, summaries, etc.).
+
+    Returns the assistant text content as a string. Raises on API errors so callers can
+    decide whether to fall back gracefully.
+    """
+    messages: list[dict] = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    messages.append({"role": "user", "content": user_prompt})
+    response = _get_client().chat.completions.create(
+        model=MODEL,
+        messages=messages,
+        max_tokens=max_tokens,
+    )
+    return (response.choices[0].message.content or "").strip()

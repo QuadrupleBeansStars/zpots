@@ -1,10 +1,7 @@
-"""Claude AI helpers for ZPOTS."""
+"""LLM helpers for ZPOTS — backed by the shared agents.llm_client (OpenAI / Azure)."""
 import json
-import anthropic
-import streamlit as st
 
-_client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
-_MODEL = "claude-opus-4-7"
+from agents.llm_client import complete
 
 SPORTS_LIST = ["Badminton", "Football", "Basketball", "Padel"]
 DISTRICTS = ["Sukhumvit", "Thong Lor", "Ari", "Pathumwan", "Silom"]
@@ -30,12 +27,7 @@ Return JSON with exactly these keys (use null if not mentioned):
 Return ONLY the JSON object, no markdown, no explanation."""
 
     try:
-        response = _client.messages.create(
-            model=_MODEL,
-            max_tokens=256,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        text = response.content[0].text.strip()
+        text = complete(prompt, max_tokens=256)
         if text.startswith("```"):
             text = text.split("```")[1]
             if text.startswith("json"):
@@ -71,12 +63,7 @@ Generate a concise venue performance summary (3–4 short paragraphs) covering:
 Use markdown formatting with **bold** for key numbers. Be specific and data-driven. Keep it under 200 words."""
 
     try:
-        response = _client.messages.create(
-            model=_MODEL,
-            max_tokens=512,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        return response.content[0].text
+        return complete(prompt, max_tokens=512)
     except Exception as e:
         return f"Unable to generate insights at this time. Please try again. ({e})"
 
@@ -97,12 +84,7 @@ Tone: professional, energetic, appealing to Bangkok sports enthusiasts.
 Output ONLY the description text — no headings, no quotes, no extra commentary."""
 
     try:
-        response = _client.messages.create(
-            model=_MODEL,
-            max_tokens=256,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        return response.content[0].text.strip()
+        return complete(prompt, max_tokens=256)
     except Exception as e:
         return f"Unable to generate description at this time. ({e})"
 
@@ -131,18 +113,18 @@ Booking details:
 
 Answer questions about directions, transport (BTS/MRT), parking, what to bring, dress code, rules, or anything about the venue. Be concise and friendly."""
 
-    api_messages = [
-        {"role": msg["role"], "content": msg["content"]}
-        for msg in messages
-    ]
+    # The court assistant is multi-turn (history-bearing). complete() is single-shot,
+    # so we call the underlying client directly for this one case.
+    from agents.llm_client import _get_client, MODEL  # local import to avoid leaking private at module load
+    api_messages = [{"role": "system", "content": system_instruction}]
+    api_messages.extend({"role": m["role"], "content": m["content"]} for m in messages)
 
     try:
-        response = _client.messages.create(
-            model=_MODEL,
-            max_tokens=512,
-            system=system_instruction,
+        response = _get_client().chat.completions.create(
+            model=MODEL,
             messages=api_messages,
+            max_tokens=512,
         )
-        return response.content[0].text
+        return (response.choices[0].message.content or "").strip()
     except Exception as e:
         return f"Sorry, I couldn't process that right now. Please try again. ({e})"
