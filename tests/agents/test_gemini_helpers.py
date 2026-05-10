@@ -9,17 +9,17 @@ from utils import gemini
 
 
 def test_parse_search_query_handles_plain_json():
-    with patch("utils.gemini.complete", return_value='{"sport": "Badminton", "district": null, "time_of_day": "evening", "max_price": 500}'):
+    with patch("utils.gemini.complete", return_value='{"sport": "Badminton", "district": null, "time_of_day": "evening", "max_price": 500}') as m:
         out = gemini.parse_search_query("badminton tonight under 500")
     assert out == {"sport": "Badminton", "district": None, "time_of_day": "evening", "max_price": 500}
+    # JSON mode must be requested so the model never wraps the response in markdown.
+    assert m.call_args.kwargs["json_mode"] is True
 
 
-def test_parse_search_query_strips_markdown_code_fence():
-    fenced = '```json\n{"sport": "Football", "district": "Sukhumvit", "time_of_day": null, "max_price": null}\n```'
-    with patch("utils.gemini.complete", return_value=fenced):
-        out = gemini.parse_search_query("football in sukhumvit")
-    assert out["sport"] == "Football"
-    assert out["district"] == "Sukhumvit"
+def test_parse_search_query_returns_empty_filters_on_invalid_json():
+    with patch("utils.gemini.complete", return_value="not json at all"):
+        out = gemini.parse_search_query("garbled response")
+    assert out == {"sport": None, "district": None, "time_of_day": None, "max_price": None}
 
 
 def test_parse_search_query_returns_empty_filters_on_error():
@@ -46,23 +46,32 @@ def test_generate_court_description_falls_back_on_error():
 
 
 def test_chat_with_court_assistant_uses_history_and_system():
-    fake_response = MagicMock()
-    fake_response.choices = [MagicMock()]
-    fake_response.choices[0].message.content = "BTS Asok is the closest stop."
-    fake_client = MagicMock()
-    fake_client.chat.completions.create.return_value = fake_response
-
     court = {"name": "BBC", "sport": "Badminton", "amenities": [{"value": "AC"}]}
     booking = {"date": "2026-06-01", "time_start": "18:00", "time_end": "19:00"}
+    captured = {}
 
-    with patch("agents.llm_client._get_client", return_value=fake_client):
+    def fake_chat_completion(messages, system, max_tokens=512):
+        captured["messages"] = messages
+        captured["system"] = system
+        return "BTS Asok is the closest stop."
+
+    with patch("utils.gemini.chat_completion", side_effect=fake_chat_completion):
         out = gemini.chat_with_court_assistant(
             messages=[{"role": "user", "content": "how do I get there?"}],
             court=court, booking=booking,
         )
 
     assert "BTS Asok" in out
-    sent = fake_client.chat.completions.create.call_args.kwargs["messages"]
-    assert sent[0]["role"] == "system"
-    assert "ZPOTS" in sent[0]["content"]
-    assert sent[1] == {"role": "user", "content": "how do I get there?"}
+    assert "ZPOTS" in captured["system"]
+    assert captured["messages"] == [{"role": "user", "content": "how do I get there?"}]
+
+
+def test_chat_with_court_assistant_falls_back_on_error():
+    court = {"name": "BBC", "sport": "Badminton", "amenities": []}
+    booking = {"date": "2026-06-01", "time_start": "18:00", "time_end": "19:00"}
+    with patch("utils.gemini.chat_completion", side_effect=RuntimeError("api down")):
+        out = gemini.chat_with_court_assistant(
+            messages=[{"role": "user", "content": "anything"}],
+            court=court, booking=booking,
+        )
+    assert "couldn't process" in out.lower()
