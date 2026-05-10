@@ -50,3 +50,55 @@ def list_bookings(
         }
         for r in rows
     ]
+
+
+from datetime import date as _date
+from utils.ml_inference import predict_noshow_risk
+
+
+def _court_lookup(court_id: str) -> dict:
+    return next((c for c in COURTS if c["id"] == court_id), {})
+
+
+def _hydrate_for_noshow(b: dict) -> dict:
+    court = _court_lookup(b["court_id"])
+    d = _date.fromisoformat(b["date"])
+    dow = d.weekday()
+    hour = int(b["time_start"].split(":")[0])
+    return {
+        "court_id": b["court_id"],
+        "sport": court.get("sport", "Badminton"),
+        "district": court.get("district", "Sukhumvit"),
+        "day_of_week": dow,
+        "hour": hour,
+        "is_weekend": dow >= 5,
+        "is_holiday": False,
+        "weather": "sunny",
+        "price": int(b["total_price"]) // max(1, int(b["duration"])),
+        "lead_time_days": max(0, (d - _date.today()).days),
+        "is_repeat_customer": True,
+    }
+
+
+def rank_noshow_risk(
+    date_from: str | None = None, date_to: str | None = None, limit: int = 10,
+) -> list[dict]:
+    """Rank upcoming CONFIRMED bookings by predicted no-show probability (high → low)."""
+    bookings = list_bookings(date_from=date_from, date_to=date_to,
+                             status="CONFIRMED", limit=200)
+    scored = []
+    for b in bookings:
+        feats = _hydrate_for_noshow(b)
+        tier, p = predict_noshow_risk(feats)
+        scored.append({
+            "txn_id": b["txn_id"],
+            "player_name": b["player_name"],
+            "court_id": b["court_id"],
+            "court_name": b["court_name"],
+            "date": b["date"],
+            "time_start": b["time_start"],
+            "risk_tier": tier,
+            "risk_probability": round(p, 3),
+        })
+    scored.sort(key=lambda r: r["risk_probability"], reverse=True)
+    return scored[:limit]

@@ -68,3 +68,25 @@ def test_list_bookings_filters_by_date_range():
     rows = tools.list_bookings(date_from="2026-06-01", date_to="2026-06-30")
     assert len(rows) == 1
     assert rows[0]["date"] == "2026-06-15"
+
+
+def test_rank_noshow_risk_returns_sorted_upcoming_bookings(monkeypatch):
+    # Stub the ML predictor so the test does not depend on artifacts on disk.
+    fake = {"bbc-01": ("High", 0.82), "sky-02": ("Low", 0.11)}
+    def fake_predict(booking):
+        return fake.get(booking["court_id"], ("Medium", 0.5))
+    monkeypatch.setattr("agents.owner.tools.predict_noshow_risk", fake_predict)
+
+    db.create_booking(player_id=1, player_name="Alex", court_id="bbc-01", court_name="BBC",
+                      date_iso="2099-06-01", time_start="18:00", time_end="19:00",
+                      duration=1, total_price=500)
+    db.create_booking(player_id=1, player_name="Narin", court_id="sky-02", court_name="Sky",
+                      date_iso="2099-06-01", time_start="20:00", time_end="22:00",
+                      duration=2, total_price=2400)
+
+    ranked = tools.rank_noshow_risk(date_from="2099-06-01", date_to="2099-06-30", limit=10)
+    assert len(ranked) == 2
+    assert ranked[0]["court_id"] == "bbc-01"
+    assert ranked[0]["risk_tier"] == "High"
+    assert 0.0 <= ranked[0]["risk_probability"] <= 1.0
+    assert ranked[1]["court_id"] == "sky-02"
