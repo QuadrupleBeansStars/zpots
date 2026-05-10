@@ -102,3 +102,35 @@ def rank_noshow_risk(
         })
     scored.sort(key=lambda r: r["risk_probability"], reverse=True)
     return scored[:limit]
+
+
+from utils.ml_inference import get_demand_forecast as get_demand_forecast_df
+
+
+def get_demand_forecast(top_n: int = 10) -> list[dict]:
+    """Return the top_n predicted-busiest (court_id, day_of_week, hour) rows."""
+    df = get_demand_forecast_df()
+    if df.empty:
+        return []
+    top = df.sort_values("predicted_bookings", ascending=False).head(top_n)
+    return [
+        {
+            "court_id": r["court_id"],
+            "day_of_week": int(r["day_of_week"]),
+            "hour": int(r["hour"]),
+            "predicted_bookings": round(float(r["predicted_bookings"]), 2),
+        }
+        for _, r in top.iterrows()
+    ]
+
+
+def summarize_courts() -> list[dict]:
+    """Return one row per court: id, name, sport, district, price_per_hour, utilization."""
+    return [
+        {
+            "id": c["id"], "name": c["name"], "sport": c["sport"],
+            "district": c["district"], "price_per_hour": c["price_per_hour"],
+            "utilization_pct": c.get("utilization"),
+        }
+        for c in COURTS
+    ]

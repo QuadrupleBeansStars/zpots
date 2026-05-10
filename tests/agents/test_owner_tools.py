@@ -90,3 +90,24 @@ def test_rank_noshow_risk_returns_sorted_upcoming_bookings(monkeypatch):
     assert ranked[0]["risk_tier"] == "High"
     assert 0.0 <= ranked[0]["risk_probability"] <= 1.0
     assert ranked[1]["court_id"] == "sky-02"
+
+
+def test_get_demand_forecast_returns_top_hours(monkeypatch):
+    import pandas as pd
+    df = pd.DataFrame([
+        {"court_id": "bbc-01", "day_of_week": 5, "hour": 19, "predicted_bookings": 4.2},
+        {"court_id": "bbc-01", "day_of_week": 5, "hour": 18, "predicted_bookings": 3.8},
+        {"court_id": "bbc-01", "day_of_week": 1, "hour": 11, "predicted_bookings": 0.4},
+    ])
+    monkeypatch.setattr("agents.owner.tools.get_demand_forecast_df", lambda: df)
+
+    out = tools.get_demand_forecast(top_n=2)
+    assert len(out) == 2
+    assert out[0]["predicted_bookings"] == 4.2
+    assert out[0]["court_id"] == "bbc-01"
+
+
+def test_summarize_courts_returns_all_courts():
+    out = tools.summarize_courts()
+    assert any(c["id"] == "bbc-01" and c["sport"] == "Badminton" for c in out)
+    assert all({"id", "name", "sport", "district", "price_per_hour"} <= set(c.keys()) for c in out)
