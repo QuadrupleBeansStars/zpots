@@ -7,9 +7,12 @@ from data import database as db
 
 
 def render_player_chat() -> None:
-    user = st.session_state.get("user")
-    if not user or user.get("role") != "player":
+    if not st.session_state.get("logged_in") or st.session_state.get("flow") != "player":
         return
+    user = {
+        "id": st.session_state.user_id,
+        "name": st.session_state.user_name,
+    }
 
     float_init()
 
