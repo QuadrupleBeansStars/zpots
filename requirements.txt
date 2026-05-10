@@ -12,3 +12,5 @@ numpy>=1.26
 pandas>=2.1
 streamlit-float>=0.3
 pytest>=8
+openai>=1.40
+python-dotenv>=1.0

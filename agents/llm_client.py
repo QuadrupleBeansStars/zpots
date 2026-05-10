@@ -1,30 +1,53 @@
-"""Thin wrapper around the Anthropic SDK so the rest of the agent code is model-agnostic.
+"""Thin LLM client wrapper. Single swap point for model + provider.
 
-The MODEL constant is the single swap point when the new LLM deployment lands.
+Provider is chosen by env var `OPENAI_PROVIDER` (default "azure"). Secrets and
+deployment ids are loaded from the project's dev.env via python-dotenv.
 """
 import os
-from anthropic import Anthropic
+from typing import Union
 
-# TODO: swap to the new deployment id once provided.
-MODEL = os.getenv("ZPOTS_AGENT_MODEL", "claude-sonnet-4-6")
-MAX_TOKENS = 1024
+from dotenv import load_dotenv
+from openai import AzureOpenAI, OpenAI
 
-_client: Anthropic | None = None
+# Load secrets from dev.env at the project root if present.
+_ENV_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "dev.env"
+)
+load_dotenv(_ENV_PATH)
+
+MODEL = os.getenv("ZPOTS_AGENT_MODEL", os.getenv("AZURE_DEPLOYMENT", "gpt-4o-mini"))
+MAX_TOKENS = 2048
+
+_client: Union[AzureOpenAI, OpenAI, None] = None
 
 
-def _get_client() -> Anthropic:
+def _get_client() -> Union[AzureOpenAI, OpenAI]:
     global _client
-    if _client is None:
-        _client = Anthropic()  # reads ANTHROPIC_API_KEY from env
+    if _client is not None:
+        return _client
+    provider = os.getenv("OPENAI_PROVIDER", "azure").lower()
+    if provider == "azure":
+        _client = AzureOpenAI(
+            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+            api_version=os.getenv("AZURE_API_VERSION"),
+            azure_endpoint=os.getenv("AZURE_ENDPOINT"),
+        )
+    else:
+        _client = OpenAI()  # reads OPENAI_API_KEY
     return _client
 
 
 def chat(messages: list[dict], tools: list[dict], system: str):
-    """Single turn against the model. Returns the raw Anthropic Message object."""
-    return _get_client().messages.create(
+    """Single turn against the model. Returns the raw OpenAI ChatCompletion object.
+
+    `messages` is the running conversation (user/assistant/tool turns). `system`
+    is prepended as the first system message. `tools` is OpenAI tool schema
+    (`[{"type": "function", "function": {...}}, ...]`).
+    """
+    full = [{"role": "system", "content": system}] + list(messages)
+    return _get_client().chat.completions.create(
         model=MODEL,
+        messages=full,
+        tools=tools or None,
         max_tokens=MAX_TOKENS,
-        system=system,
-        tools=tools,
-        messages=messages,
     )

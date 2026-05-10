@@ -1,4 +1,6 @@
-"""Player agent tool-calling loop."""
+"""Player agent tool-calling loop (OpenAI / Azure OpenAI)."""
+import json
+
 from agents.llm_client import chat
 from agents.player import tools as player_tools
 from agents.player.system_prompt import build_system_prompt
@@ -17,41 +19,40 @@ def run_turn(user_message: str, history: list[dict], user: dict) -> dict:
 
     for _ in range(MAX_HOPS):
         response = chat(messages, tools=player_tools.TOOLS, system=system)
-        # Append the assistant turn (including tool_use blocks) verbatim.
-        messages.append({
-            "role": "assistant",
-            "content": [_block_to_dict(b) for b in response.content],
-        })
+        choice = response.choices[0]
+        msg = choice.message
 
-        if response.stop_reason != "tool_use":
-            text = "".join(b.text for b in response.content if b.type == "text")
-            return {"text": text.strip(), "draft": pending_draft, "history": messages}
+        assistant_turn: dict = {"role": "assistant", "content": msg.content or ""}
+        if msg.tool_calls:
+            assistant_turn["tool_calls"] = [
+                {
+                    "id": tc.id,
+                    "type": "function",
+                    "function": {"name": tc.function.name, "arguments": tc.function.arguments},
+                }
+                for tc in msg.tool_calls
+            ]
+        messages.append(assistant_turn)
 
-        tool_results = []
-        for block in response.content:
-            if block.type != "tool_use":
-                continue
-            result = player_tools.dispatch(block.name, dict(block.input), user_id=user["id"])
+        if choice.finish_reason != "tool_calls":
+            return {
+                "text": (msg.content or "").strip(),
+                "draft": pending_draft,
+                "history": messages,
+            }
+
+        for tc in msg.tool_calls or []:
+            try:
+                args = json.loads(tc.function.arguments or "{}")
+            except json.JSONDecodeError:
+                args = {}
+            result = player_tools.dispatch(tc.function.name, args, user_id=user["id"])
             if isinstance(result, dict) and result.get("kind") in ("booking_draft", "cancel_draft"):
                 pending_draft = result
-            tool_results.append({
-                "type": "tool_result",
-                "tool_use_id": block.id,
-                "content": _stringify(result),
+            messages.append({
+                "role": "tool",
+                "tool_call_id": tc.id,
+                "content": json.dumps(result, default=str),
             })
-        messages.append({"role": "user", "content": tool_results})
 
     return {"text": "(agent hop limit reached)", "draft": pending_draft, "history": messages}
-
-
-def _block_to_dict(b) -> dict:
-    if b.type == "text":
-        return {"type": "text", "text": b.text}
-    if b.type == "tool_use":
-        return {"type": "tool_use", "id": b.id, "name": b.name, "input": b.input}
-    return {"type": b.type}
-
-
-def _stringify(v) -> str:
-    import json
-    return json.dumps(v, default=str)

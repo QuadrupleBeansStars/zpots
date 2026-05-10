@@ -4,8 +4,14 @@ Tools query the SQLite bookings table and the static COURTS list. No write
 tools in v1 — pricing and slot-block changes still require the dedicated
 Streamlit pages.
 """
+from datetime import date as _date
+
 from data import database as db
 from data.dummy_data import COURTS
+from utils.ml_inference import predict_noshow_risk
+from utils.ml_inference import get_demand_forecast as get_demand_forecast_df
+
+_LIST_BOOKINGS_MAX = 200
 
 
 def get_revenue(date_from: str, date_to: str) -> dict:
@@ -28,16 +34,21 @@ def list_bookings(
     limit: int = 50,
 ) -> list[dict]:
     """Return bookings matching the supplied filters, newest first, capped by limit."""
+    limit = max(1, min(int(limit), _LIST_BOOKINGS_MAX))
     sql = "SELECT * FROM bookings WHERE 1=1"
     args: list = []
     if date_from:
-        sql += " AND date >= ?"; args.append(date_from)
+        sql += " AND date >= ?"
+        args.append(date_from)
     if date_to:
-        sql += " AND date <= ?"; args.append(date_to)
+        sql += " AND date <= ?"
+        args.append(date_to)
     if court_id:
-        sql += " AND court_id = ?"; args.append(court_id)
+        sql += " AND court_id = ?"
+        args.append(court_id)
     if status:
-        sql += " AND status = ?"; args.append(status)
+        sql += " AND status = ?"
+        args.append(status)
     sql += " ORDER BY date DESC, time_start DESC LIMIT ?"
     args.append(limit)
     rows = db.get_connection().execute(sql, args).fetchall()
@@ -50,10 +61,6 @@ def list_bookings(
         }
         for r in rows
     ]
-
-
-from datetime import date as _date
-from utils.ml_inference import predict_noshow_risk
 
 
 def _court_lookup(court_id: str) -> dict:
@@ -85,7 +92,7 @@ def rank_noshow_risk(
 ) -> list[dict]:
     """Rank upcoming CONFIRMED bookings by predicted no-show probability (high → low)."""
     bookings = list_bookings(date_from=date_from, date_to=date_to,
-                             status="CONFIRMED", limit=200)
+                             status="CONFIRMED", limit=_LIST_BOOKINGS_MAX)
     scored = []
     for b in bookings:
         feats = _hydrate_for_noshow(b)
@@ -102,9 +109,6 @@ def rank_noshow_risk(
         })
     scored.sort(key=lambda r: r["risk_probability"], reverse=True)
     return scored[:limit]
-
-
-from utils.ml_inference import get_demand_forecast as get_demand_forecast_df
 
 
 def get_demand_forecast(top_n: int = 10) -> list[dict]:
@@ -138,55 +142,70 @@ def summarize_courts() -> list[dict]:
 
 TOOLS = [
     {
-        "name": "get_revenue",
-        "description": "Sum confirmed-booking revenue (THB) over a date range. Returns {total_thb, bookings, date_from, date_to}.",
-        "input_schema": {
-            "type": "object",
-            "required": ["date_from", "date_to"],
-            "properties": {
-                "date_from": {"type": "string", "description": "YYYY-MM-DD inclusive"},
-                "date_to":   {"type": "string", "description": "YYYY-MM-DD inclusive"},
+        "type": "function",
+        "function": {
+            "name": "get_revenue",
+            "description": "Sum confirmed-booking revenue (THB) over a date range. Returns {total_thb, bookings, date_from, date_to}.",
+            "parameters": {
+                "type": "object",
+                "required": ["date_from", "date_to"],
+                "properties": {
+                    "date_from": {"type": "string", "description": "YYYY-MM-DD inclusive"},
+                    "date_to":   {"type": "string", "description": "YYYY-MM-DD inclusive"},
+                },
             },
         },
     },
     {
-        "name": "list_bookings",
-        "description": "List bookings filtered by date range, court, or status. Returns up to `limit` rows, newest first.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "date_from": {"type": "string"},
-                "date_to":   {"type": "string"},
-                "court_id":  {"type": "string"},
-                "status":    {"type": "string", "enum": ["CONFIRMED", "CANCELLED"]},
-                "limit":     {"type": "integer", "description": "Default 50, max 200"},
+        "type": "function",
+        "function": {
+            "name": "list_bookings",
+            "description": "List bookings filtered by date range, court, or status. Returns up to `limit` rows, newest first.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "date_from": {"type": "string"},
+                    "date_to":   {"type": "string"},
+                    "court_id":  {"type": "string"},
+                    "status":    {"type": "string", "enum": ["CONFIRMED", "CANCELLED"]},
+                    "limit":     {"type": "integer", "description": "Default 50, max 200"},
+                },
             },
         },
     },
     {
-        "name": "rank_noshow_risk",
-        "description": "Return upcoming CONFIRMED bookings ranked by predicted no-show probability (highest first). Each row has txn_id, player_name, court, date, time_start, risk_tier, risk_probability.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "date_from": {"type": "string"},
-                "date_to":   {"type": "string"},
-                "limit":     {"type": "integer"},
+        "type": "function",
+        "function": {
+            "name": "rank_noshow_risk",
+            "description": "Return upcoming CONFIRMED bookings ranked by predicted no-show probability (highest first). Each row has txn_id, player_name, court, date, time_start, risk_tier, risk_probability.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "date_from": {"type": "string"},
+                    "date_to":   {"type": "string"},
+                    "limit":     {"type": "integer"},
+                },
             },
         },
     },
     {
-        "name": "get_demand_forecast",
-        "description": "Top predicted-busiest (court, day_of_week, hour) cells from the trained demand-forecast model. day_of_week: 0=Mon..6=Sun.",
-        "input_schema": {
-            "type": "object",
-            "properties": {"top_n": {"type": "integer", "description": "Default 10"}},
+        "type": "function",
+        "function": {
+            "name": "get_demand_forecast",
+            "description": "Top predicted-busiest (court, day_of_week, hour) cells from the trained demand-forecast model. day_of_week: 0=Mon..6=Sun.",
+            "parameters": {
+                "type": "object",
+                "properties": {"top_n": {"type": "integer", "description": "Default 10"}},
+            },
         },
     },
     {
-        "name": "summarize_courts",
-        "description": "List all courts with id, name, sport, district, price_per_hour, utilization_pct.",
-        "input_schema": {"type": "object", "properties": {}},
+        "type": "function",
+        "function": {
+            "name": "summarize_courts",
+            "description": "List all courts with id, name, sport, district, price_per_hour, utilization_pct.",
+            "parameters": {"type": "object", "properties": {}},
+        },
     },
 ]
 

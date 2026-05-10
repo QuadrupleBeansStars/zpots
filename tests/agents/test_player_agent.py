@@ -1,7 +1,10 @@
+import json
 import os
 import tempfile
-import pytest
 from unittest.mock import patch, MagicMock
+
+import pytest
+
 from data import database as db
 from agents.player import agent
 
@@ -18,26 +21,28 @@ def fresh_db(monkeypatch):
     os.unlink(tmp.name)
 
 
-def _msg(stop_reason, content):
-    m = MagicMock()
-    m.stop_reason = stop_reason
-    m.content = content
-    return m
+def _completion(finish_reason: str, *, content: str | None = None, tool_calls=None):
+    """Build a fake openai.ChatCompletion-shaped object."""
+    response = MagicMock()
+    choice = MagicMock()
+    choice.finish_reason = finish_reason
+    choice.message.content = content
+    choice.message.tool_calls = tool_calls
+    response.choices = [choice]
+    return response
 
 
-def _text_block(text):
-    b = MagicMock(); b.type = "text"; b.text = text
-    return b
-
-
-def _tool_block(name, args, tool_id="t1"):
-    b = MagicMock(); b.type = "tool_use"; b.name = name; b.input = args; b.id = tool_id
-    return b
+def _tool_call(name: str, args: dict, tool_id: str = "t1"):
+    tc = MagicMock()
+    tc.id = tool_id
+    tc.function.name = name
+    tc.function.arguments = json.dumps(args)
+    return tc
 
 
 def test_run_turn_returns_text_when_no_tool_use():
     with patch("agents.player.agent.chat") as mock_chat:
-        mock_chat.return_value = _msg("end_turn", [_text_block("Hi Alex!")])
+        mock_chat.return_value = _completion("stop", content="Hi Alex!")
         result = agent.run_turn(
             "hello",
             history=[],
@@ -50,8 +55,8 @@ def test_run_turn_returns_text_when_no_tool_use():
 def test_run_turn_dispatches_tool_then_responds():
     user = {"id": 1, "name": "Alex"}
     responses = [
-        _msg("tool_use", [_tool_block("search_courts", {"sport": "Badminton"})]),
-        _msg("end_turn", [_text_block("Found Bangkok Badminton Center.")]),
+        _completion("tool_calls", tool_calls=[_tool_call("search_courts", {"sport": "Badminton"})]),
+        _completion("stop", content="Found Bangkok Badminton Center."),
     ]
     with patch("agents.player.agent.chat", side_effect=responses) as mock_chat:
         result = agent.run_turn("find badminton", history=[], user=user)
@@ -62,12 +67,12 @@ def test_run_turn_dispatches_tool_then_responds():
 def test_run_turn_surfaces_booking_draft():
     user = {"id": 1, "name": "Alex"}
     responses = [
-        _msg("tool_use", [_tool_block(
+        _completion("tool_calls", tool_calls=[_tool_call(
             "propose_booking",
             {"court_id": "bbc-01", "date_iso": "2026-06-01",
              "time_start": "18:00", "duration": 1},
         )]),
-        _msg("end_turn", [_text_block("Confirm to book.")]),
+        _completion("stop", content="Confirm to book."),
     ]
     with patch("agents.player.agent.chat", side_effect=responses):
         result = agent.run_turn("book bbc-01 sat 6pm", history=[], user=user)

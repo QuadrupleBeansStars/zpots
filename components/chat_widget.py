@@ -78,10 +78,6 @@ def render_chat() -> None:
     panel.markdown(f'<style>{panel_css}</style>', unsafe_allow_html=True)
 
 
-# Backward-compatible alias kept for any external caller.
-render_player_chat = render_chat
-
-
 def _handle_user_message(prompt: str, user: dict, cfg: dict) -> None:
     history = st.session_state.chat_history
     display_history = [m for m in history if isinstance(m.get("content"), str)]

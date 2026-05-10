@@ -110,55 +110,70 @@ def propose_cancel(user_id: int, booking_id: int) -> dict:
 
 TOOLS = [
     {
-        "name": "search_courts",
-        "description": "Find courts matching sport/district/max_price filters. Returns a list of courts with id, name, sport, district, price_per_hour, rating.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "sport": {"type": "string", "description": "e.g. Badminton, Football, Padel"},
-                "district": {"type": "string", "description": "Bangkok district name; partial match"},
-                "max_price": {"type": "integer", "description": "Max price per hour in THB"},
+        "type": "function",
+        "function": {
+            "name": "search_courts",
+            "description": "Find courts matching sport/district/max_price filters. Returns a list of courts with id, name, sport, district, price_per_hour, rating.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "sport": {"type": "string", "description": "e.g. Badminton, Football, Padel"},
+                    "district": {"type": "string", "description": "Bangkok district name; partial match"},
+                    "max_price": {"type": "integer", "description": "Max price per hour in THB"},
+                },
             },
         },
     },
     {
-        "name": "get_availability",
-        "description": "List free hour-start times (HH:00) for a court on a given date.",
-        "input_schema": {
-            "type": "object",
-            "required": ["court_id", "date_iso"],
-            "properties": {
-                "court_id": {"type": "string"},
-                "date_iso": {"type": "string", "description": "YYYY-MM-DD"},
+        "type": "function",
+        "function": {
+            "name": "get_availability",
+            "description": "List free hour-start times (HH:00) for a court on a given date.",
+            "parameters": {
+                "type": "object",
+                "required": ["court_id", "date_iso"],
+                "properties": {
+                    "court_id": {"type": "string"},
+                    "date_iso": {"type": "string", "description": "YYYY-MM-DD"},
+                },
             },
         },
     },
     {
-        "name": "list_my_bookings",
-        "description": "Return all bookings belonging to the current user.",
-        "input_schema": {"type": "object", "properties": {}},
+        "type": "function",
+        "function": {
+            "name": "list_my_bookings",
+            "description": "Return all bookings belonging to the current user.",
+            "parameters": {"type": "object", "properties": {}},
+        },
     },
     {
-        "name": "propose_booking",
-        "description": "Draft a booking for confirmation. Does NOT write to the database. The user will see Confirm/Cancel buttons. Always call this before booking.",
-        "input_schema": {
-            "type": "object",
-            "required": ["court_id", "date_iso", "time_start", "duration"],
-            "properties": {
-                "court_id": {"type": "string"},
-                "date_iso": {"type": "string", "description": "YYYY-MM-DD"},
-                "time_start": {"type": "string", "description": "HH:00 24-hour"},
-                "duration": {"type": "integer", "description": "Hours, 1-4"},
+        "type": "function",
+        "function": {
+            "name": "propose_booking",
+            "description": "Draft a booking for confirmation. Does NOT write to the database. The user will see Confirm/Cancel buttons. Always call this before booking.",
+            "parameters": {
+                "type": "object",
+                "required": ["court_id", "date_iso", "time_start", "duration"],
+                "properties": {
+                    "court_id": {"type": "string"},
+                    "date_iso": {"type": "string", "description": "YYYY-MM-DD"},
+                    "time_start": {"type": "string", "description": "HH:00 24-hour"},
+                    "duration": {"type": "integer", "description": "Hours, 1-4"},
+                },
             },
         },
     },
     {
-        "name": "propose_cancel",
-        "description": "Draft a cancellation for confirmation. Does NOT write to the database.",
-        "input_schema": {
-            "type": "object",
-            "required": ["booking_id"],
-            "properties": {"booking_id": {"type": "integer"}},
+        "type": "function",
+        "function": {
+            "name": "propose_cancel",
+            "description": "Draft a cancellation for confirmation. Does NOT write to the database.",
+            "parameters": {
+                "type": "object",
+                "required": ["booking_id"],
+                "properties": {"booking_id": {"type": "integer"}},
+            },
         },
     },
 ]
