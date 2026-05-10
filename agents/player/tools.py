@@ -56,3 +56,53 @@ def list_my_bookings(user_id: int) -> list[dict]:
         }
         for r in rows
     ]
+
+
+def _find_court(court_id: str) -> dict | None:
+    return next((c for c in COURTS if c["id"] == court_id), None)
+
+
+def propose_booking(
+    user_id: int, court_id: str, date_iso: str, time_start: str, duration: int,
+) -> dict:
+    court = _find_court(court_id)
+    if court is None:
+        return {"kind": "error", "message": f"Unknown court id {court_id}"}
+
+    start_h = int(time_start.split(":")[0])
+    needed = {f"{start_h + i:02d}:00" for i in range(duration)}
+    booked = db.get_booked_slots(court_id, date_iso)
+    if needed & booked:
+        return {"kind": "error", "message": f"Slot is not available on {date_iso} at {time_start}."}
+
+    time_end = f"{start_h + duration:02d}:00"
+    total = court["price_per_hour"] * duration
+    return {
+        "kind": "booking_draft",
+        "user_id": user_id,
+        "court_id": court_id,
+        "court_name": court["name"],
+        "date": date_iso,
+        "time_start": time_start,
+        "time_end": time_end,
+        "duration": duration,
+        "total_price": total,
+    }
+
+
+def propose_cancel(user_id: int, booking_id: int) -> dict:
+    rows = db.get_bookings_by_user(user_id)
+    booking = next((b for b in rows if b["id"] == booking_id), None)
+    if booking is None:
+        return {"kind": "error", "message": "Booking not found or not yours."}
+    if booking["status"] == "CANCELLED":
+        return {"kind": "error", "message": "Booking is already cancelled."}
+    return {
+        "kind": "cancel_draft",
+        "user_id": user_id,
+        "booking_id": booking_id,
+        "txn_id": booking["txn_id"],
+        "court_name": booking["court_name"],
+        "date": booking["date"],
+        "time_start": booking["time_start"],
+    }

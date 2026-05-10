@@ -55,3 +55,51 @@ def test_list_my_bookings_scoped_to_user():
     rows = tools.list_my_bookings(user_id=3)
     assert len(rows) == 1
     assert rows[0]["court_id"] == "bbc-01"
+
+
+def test_propose_booking_returns_draft_with_price():
+    draft = tools.propose_booking(
+        user_id=1, court_id="bbc-01",
+        date_iso="2026-06-01", time_start="18:00", duration=2,
+    )
+    assert draft["kind"] == "booking_draft"
+    assert draft["court_name"] == "Bangkok Badminton Center"
+    assert draft["total_price"] == 450 * 2
+    assert draft["time_end"] == "20:00"
+
+
+def test_propose_booking_rejects_taken_slot():
+    db.create_booking(
+        player_id=2, player_name="Narin", court_id="bbc-01", court_name="BBC",
+        date_iso="2026-06-01", time_start="18:00", time_end="19:00",
+        duration=1, total_price=450,
+    )
+    draft = tools.propose_booking(
+        user_id=1, court_id="bbc-01",
+        date_iso="2026-06-01", time_start="18:00", duration=1,
+    )
+    assert draft["kind"] == "error"
+    assert "not available" in draft["message"].lower()
+
+
+def test_propose_cancel_returns_draft_for_own_booking():
+    txn = db.create_booking(
+        player_id=1, player_name="Alex", court_id="bbc-01", court_name="BBC",
+        date_iso="2026-06-01", time_start="18:00", time_end="19:00",
+        duration=1, total_price=450,
+    )
+    bid = next(b for b in db.get_bookings_by_user(1) if b["txn_id"] == txn)["id"]
+    draft = tools.propose_cancel(user_id=1, booking_id=bid)
+    assert draft["kind"] == "cancel_draft"
+    assert draft["booking_id"] == bid
+
+
+def test_propose_cancel_rejects_other_users():
+    txn = db.create_booking(
+        player_id=2, player_name="Narin", court_id="bbc-01", court_name="BBC",
+        date_iso="2026-06-01", time_start="18:00", time_end="19:00",
+        duration=1, total_price=450,
+    )
+    bid = next(b for b in db.get_bookings_by_user(2) if b["txn_id"] == txn)["id"]
+    draft = tools.propose_cancel(user_id=1, booking_id=bid)
+    assert draft["kind"] == "error"
