@@ -1,14 +1,38 @@
-"""Floating player chat widget. Mount once from app.py for player sessions."""
+"""Floating chat widget. Mounted once from app.py; branches on session flow.
+
+For player flow: draft proposals (booking/cancel) surface inline Confirm/Cancel buttons
+that commit via data.database directly. For owner flow: read-only, no buttons.
+"""
 import streamlit as st
 from streamlit_float import float_init, float_css_helper
 
-from agents.player.agent import run_turn
+from agents.player.agent import run_turn as player_run_turn
+from agents.owner.agent import run_turn as owner_run_turn
 from data import database as db
 
 
-def render_player_chat() -> None:
-    if not st.session_state.get("logged_in") or st.session_state.get("flow") != "player":
+_CONFIGS = {
+    "player": {
+        "run_turn": player_run_turn,
+        "title": "ZPOTS Assistant",
+        "supports_drafts": True,
+    },
+    "owner": {
+        "run_turn": owner_run_turn,
+        "title": "ZPOTS Owner Assistant",
+        "supports_drafts": False,
+    },
+}
+
+
+def render_chat() -> None:
+    if not st.session_state.get("logged_in"):
         return
+    flow = st.session_state.get("flow")
+    cfg = _CONFIGS.get(flow)
+    if cfg is None:
+        return
+
     user = {
         "id": st.session_state.user_id,
         "name": st.session_state.user_name,
@@ -21,17 +45,15 @@ def render_player_chat() -> None:
         st.session_state.pending_draft = None
         st.session_state.chat_open = False
 
-    # Floating launcher button
     btn_css = float_css_helper(width="56px", right="20px", bottom="20px", transition=0)
     with st.container():
-        if st.button("💬", key="zpots_chat_toggle", help="Chat with ZPOTS assistant"):
+        if st.button("💬", key="zpots_chat_toggle", help=f"Chat with {cfg['title']}"):
             st.session_state.chat_open = not st.session_state.chat_open
     st.markdown(f'<style>{btn_css}</style>', unsafe_allow_html=True)
 
     if not st.session_state.chat_open:
         return
 
-    # Floating panel
     panel_css = float_css_helper(
         width="360px", height="520px", right="20px", bottom="90px",
         background="white", border="1px solid #ddd", border_radius="12px",
@@ -39,34 +61,37 @@ def render_player_chat() -> None:
     )
     panel = st.container()
     with panel:
-        st.markdown("**ZPOTS Assistant**")
+        st.markdown(f"**{cfg['title']}**")
         for m in st.session_state.chat_history:
             if isinstance(m["content"], str):
                 with st.chat_message(m["role"]):
                     st.write(m["content"])
 
         draft = st.session_state.pending_draft
-        if draft:
+        if cfg["supports_drafts"] and draft:
             _render_draft_confirm(draft, user)
 
         prompt = st.chat_input("Ask anything…", key="zpots_chat_input")
         if prompt:
-            _handle_user_message(prompt, user)
+            _handle_user_message(prompt, user, cfg)
             st.rerun()
     panel.markdown(f'<style>{panel_css}</style>', unsafe_allow_html=True)
 
 
-def _handle_user_message(prompt: str, user: dict) -> None:
+# Backward-compatible alias kept for any external caller.
+render_player_chat = render_chat
+
+
+def _handle_user_message(prompt: str, user: dict, cfg: dict) -> None:
     history = st.session_state.chat_history
-    # display-only history (string content) is what we render; the agent gets it too
     display_history = [m for m in history if isinstance(m.get("content"), str)]
-    # convert to anthropic-shaped messages
     anth_history = [{"role": m["role"], "content": m["content"]} for m in display_history]
 
-    result = run_turn(prompt, history=anth_history, user=user)
+    result = cfg["run_turn"](prompt, history=anth_history, user=user)
     st.session_state.chat_history.append({"role": "user", "content": prompt})
     st.session_state.chat_history.append({"role": "assistant", "content": result["text"]})
-    st.session_state.pending_draft = result["draft"]
+    if cfg["supports_drafts"]:
+        st.session_state.pending_draft = result.get("draft")
 
 
 def _render_draft_confirm(draft: dict, user: dict) -> None:

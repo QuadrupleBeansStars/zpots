@@ -30,7 +30,7 @@ from pages.owner.ai_insights import render as ai_insights
 from pages.owner.optimization import render as optimization
 
 from components.css import inject_global_css
-from components.chat_widget import render_player_chat
+from components.chat_widget import render_chat
 from data.database import init_db
 
 init_db()
@@ -143,4 +143,4 @@ elif current_page in PAGE_REGISTRY and PAGE_REGISTRY[current_page] is not None:
 else:
     render_landing()
 
-render_player_chat()
+render_chat()
