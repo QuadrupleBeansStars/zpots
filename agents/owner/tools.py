@@ -134,3 +134,73 @@ def summarize_courts() -> list[dict]:
         }
         for c in COURTS
     ]
+
+
+TOOLS = [
+    {
+        "name": "get_revenue",
+        "description": "Sum confirmed-booking revenue (THB) over a date range. Returns {total_thb, bookings, date_from, date_to}.",
+        "input_schema": {
+            "type": "object",
+            "required": ["date_from", "date_to"],
+            "properties": {
+                "date_from": {"type": "string", "description": "YYYY-MM-DD inclusive"},
+                "date_to":   {"type": "string", "description": "YYYY-MM-DD inclusive"},
+            },
+        },
+    },
+    {
+        "name": "list_bookings",
+        "description": "List bookings filtered by date range, court, or status. Returns up to `limit` rows, newest first.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "date_from": {"type": "string"},
+                "date_to":   {"type": "string"},
+                "court_id":  {"type": "string"},
+                "status":    {"type": "string", "enum": ["CONFIRMED", "CANCELLED"]},
+                "limit":     {"type": "integer", "description": "Default 50, max 200"},
+            },
+        },
+    },
+    {
+        "name": "rank_noshow_risk",
+        "description": "Return upcoming CONFIRMED bookings ranked by predicted no-show probability (highest first). Each row has txn_id, player_name, court, date, time_start, risk_tier, risk_probability.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "date_from": {"type": "string"},
+                "date_to":   {"type": "string"},
+                "limit":     {"type": "integer"},
+            },
+        },
+    },
+    {
+        "name": "get_demand_forecast",
+        "description": "Top predicted-busiest (court, day_of_week, hour) cells from the trained demand-forecast model. day_of_week: 0=Mon..6=Sun.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"top_n": {"type": "integer", "description": "Default 10"}},
+        },
+    },
+    {
+        "name": "summarize_courts",
+        "description": "List all courts with id, name, sport, district, price_per_hour, utilization_pct.",
+        "input_schema": {"type": "object", "properties": {}},
+    },
+]
+
+
+def dispatch(name: str, args: dict, user_id: int) -> dict | list:
+    """Run an owner tool by name. user_id is accepted for parity with the player dispatcher but unused in v1."""
+    if name == "get_revenue":
+        return get_revenue(**args)
+    if name == "list_bookings":
+        return list_bookings(**args)
+    if name == "rank_noshow_risk":
+        return rank_noshow_risk(**args)
+    if name == "get_demand_forecast":
+        return get_demand_forecast(**args)
+    if name == "summarize_courts":
+        return summarize_courts()
+    return {"kind": "error", "message": f"Unknown tool {name}"}
