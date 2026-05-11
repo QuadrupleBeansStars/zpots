@@ -2,11 +2,22 @@
 import streamlit as st
 
 
-def navigate(page_name, **kwargs):
-    """Navigate to a page by setting session state and rerunning."""
+def _set_page(page_name, **kwargs):
+    """Update session state to point at a new page. Safe to use as on_click callback;
+    Streamlit auto-reruns after on_click handlers, so do NOT call st.rerun() here."""
     st.session_state.page = page_name
     for k, v in kwargs.items():
         st.session_state[k] = v
+
+
+def navigate(page_name, **kwargs):
+    """Navigate to a page by setting session state and rerunning.
+
+    Use this for *direct* call sites (e.g. inside `if st.button(...):` blocks). For
+    `on_click=` callbacks, use `_set_page` instead — calling st.rerun() inside a
+    callback is a no-op and Streamlit warns about it.
+    """
+    _set_page(page_name, **kwargs)
     st.rerun()
 
 
@@ -83,14 +94,14 @@ def render_owner_sidebar():
                 label, icon=icon, key=f"sidebar_{page_key}",
                 use_container_width=True,
                 type="primary" if is_active else "secondary",
-                on_click=navigate, kwargs={"page_name": page_key},
+                on_click=_set_page, kwargs={"page_name": page_key},
             )
 
         st.markdown("<div style='min-height:40px;'></div>", unsafe_allow_html=True)
 
         st.button("Add New Court", icon=":material/add_circle:", key="sidebar_add_court",
                   type="primary", use_container_width=True,
-                  on_click=navigate,
+                  on_click=_set_page,
                   kwargs={"page_name": "add_edit_court", "editing_court_id": None})
         st.divider()
         st.button("Back to home", icon=":material/logout:", key="sidebar_logout",

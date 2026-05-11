@@ -71,7 +71,7 @@ jupyter nbconvert --to notebook --execute ml/notebooks/02_no_show_prediction.ipy
 - **Plotly** charts (heatmap, dashboards)
 - **scikit-learn** for ML models, **joblib** for persistence
 - **pandas / numpy / pyarrow** for data
-- **Anthropic Claude (Opus 4.7)** for LLM-generated AI summaries on the insights page
+- **OpenAI / Azure OpenAI** for LLM-generated AI summaries, search-query parsing, and the player + owner chat agents (single client in `agents/llm_client.py`)
 - **SQLite** via `data/database.py` for booking persistence
 
 ## Documentation

@@ -173,3 +173,14 @@ def get_all_bookings() -> list[dict]:
         "SELECT * FROM bookings ORDER BY created_at DESC"
     ).fetchall()
     return [dict(r) for r in rows]
+
+
+def cancel_booking(booking_id: int, player_id: int) -> bool:
+    """Mark a booking CANCELLED. Returns True iff the booking exists AND belongs to player_id."""
+    conn = get_connection()
+    cur = conn.execute(
+        "UPDATE bookings SET status='CANCELLED' WHERE id=? AND player_id=? AND status!='CANCELLED'",
+        (booking_id, player_id),
+    )
+    conn.commit()
+    return cur.rowcount == 1

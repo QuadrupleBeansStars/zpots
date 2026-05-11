@@ -43,14 +43,17 @@ def court_card(court, key_prefix="court", show_book=True):
 def kpi_card(label, value, delta=None, icon=None):
     icon_html  = f'<span style="font-size:18px; display:block; margin-bottom:4px;">{icon}</span>' if icon else ""
     delta_html = f'<div style="font-size:12px; color:#2E6B00; margin-top:2px;">{delta}</div>' if delta else ""
-    st.markdown(f"""
-    <div class="kpi-card">
-        {icon_html}
-        <div class="eyebrow">{label}</div>
-        <div class="display" style="font-size:28px;">{value}</div>
-        {delta_html}
-    </div>
-    """, unsafe_allow_html=True)
+    # NOTE: HTML must NOT be indented — markdown treats 4+ space indents as code blocks
+    # and escapes the angle brackets, which is what makes raw <div> show up on the page.
+    html = (
+        f'<div class="kpi-card">'
+        f'{icon_html}'
+        f'<div class="eyebrow">{label}</div>'
+        f'<div class="display" style="font-size:28px;">{value}</div>'
+        f'{delta_html}'
+        f'</div>'
+    )
+    st.markdown(html, unsafe_allow_html=True)
 
 
 def booking_card_player(booking, key_prefix="pbk"):

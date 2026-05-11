@@ -26,6 +26,11 @@ wheels/
 # Streamlit (keep config.toml for deployment)
 .streamlit/secrets.toml
 
+# Local secrets for the LLM client (loaded by agents/llm_client.py via python-dotenv)
+dev.env
+.env
+.env.local
+
 # IDE
 .vscode/
 .idea/
