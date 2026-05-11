@@ -58,13 +58,3 @@ def render():
     with pred_cols[3]:
         kpi_card("ACTIVE SLOTS", "24 Active", delta="View Rewards", icon="📅")
 
-    st.markdown("<div style='height:1.5rem;'></div>", unsafe_allow_html=True)
-    st.markdown('<div class="zpots-card"><h3 style="font-size:1rem; margin-bottom:1rem;">Quick Controls</h3></div>', unsafe_allow_html=True)
-
-    ctrl_cols = st.columns(3)
-    with ctrl_cols[0]:
-        st.toggle("Auto-Fill Waitlist", value=True, key="auto_fill")
-    with ctrl_cols[1]:
-        st.toggle("Dynamic Pricing", value=True, key="dynamic_pricing_toggle")
-    with ctrl_cols[2]:
-        st.toggle("Public Visibility", value=True, key="public_visibility")

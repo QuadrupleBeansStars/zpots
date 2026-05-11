@@ -76,8 +76,8 @@ def render():
             st.selectbox("Sort", ["Time Ascending", "Time Descending", "Status"], key="sort_filter")
 
         st.markdown("""
-        <div style="display:grid; grid-template-columns: 2fr 2fr 1fr 1fr 0.5fr; gap:0; padding:12px 16px; font-family:'Lexend'; font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#3d4455;">
-            <div>CUSTOMER</div><div>SESSION INFO</div><div>STATUS</div><div>RISK</div><div>ACTION</div>
+        <div style="display:grid; grid-template-columns: 2fr 2fr 1fr 1fr; gap:0; padding:12px 16px; font-family:'Lexend'; font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#3d4455;">
+            <div>CUSTOMER</div><div>SESSION INFO</div><div>STATUS</div><div>RISK</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -132,7 +132,7 @@ def render():
             risk_class = TIER_TO_CSS[tier]
 
             st.markdown(f"""
-            <div class="zpots-card" style="display:grid; grid-template-columns: 2fr 2fr 1fr 1fr 0.5fr; gap:0; align-items:center; margin-bottom:8px; padding:12px 16px;">
+            <div class="zpots-card" style="display:grid; grid-template-columns: 2fr 2fr 1fr 1fr; gap:0; align-items:center; margin-bottom:8px; padding:12px 16px;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <div style="width:36px; height:36px; border-radius:50%; background:{booking['avatar_color']}; color:white; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600;">{booking['customer'][0]}</div>
                     <div>
@@ -146,7 +146,6 @@ def render():
                 </div>
                 <div><span class="status-badge {status_class}">{booking['status']}</span></div>
                 <div><span class="status-badge {risk_class}">{tier}</span></div>
-                <div style="text-align:center; cursor:pointer; font-size:18px;">⋮</div>
             </div>
             """, unsafe_allow_html=True)
 
