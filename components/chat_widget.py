@@ -91,8 +91,14 @@ def _handle_user_message(prompt: str, user: dict, cfg: dict) -> None:
     display_history = [m for m in history if isinstance(m.get("content"), str)]
     anth_history = [{"role": m["role"], "content": m["content"]} for m in display_history]
 
-    result = cfg["run_turn"](prompt, history=anth_history, user=user)
+    # Echo the user message immediately so the spinner appears below it.
     st.session_state.chat_history.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.write(prompt)
+
+    with st.spinner("Thinking…"):
+        result = cfg["run_turn"](prompt, history=anth_history, user=user)
+
     st.session_state.chat_history.append({"role": "assistant", "content": result["text"]})
     if cfg["supports_drafts"]:
         st.session_state.pending_draft = result.get("draft")
