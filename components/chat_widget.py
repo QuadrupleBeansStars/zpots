@@ -2,6 +2,10 @@
 
 For player flow: draft proposals (booking/cancel) surface inline Confirm/Cancel buttons
 that commit via data.database directly. For owner flow: read-only, no buttons.
+
+Uses streamlit-float: each container is positioned via `container.float(css)` AFTER
+its contents are written. Calling `st.markdown(<style>...)` directly does NOT bind
+the CSS to a specific container and is silently no-op for positioning.
 """
 import streamlit as st
 from streamlit_float import float_init, float_css_helper
@@ -38,27 +42,26 @@ def render_chat() -> None:
         "name": st.session_state.user_name,
     }
 
-    float_init()
+    float_init(theme=True)
 
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
         st.session_state.pending_draft = None
         st.session_state.chat_open = False
 
-    btn_css = float_css_helper(width="56px", right="20px", bottom="20px", transition=0)
-    with st.container():
+    # Floating launcher button bottom-right.
+    btn_container = st.container()
+    with btn_container:
         if st.button("💬", key="zpots_chat_toggle", help=f"Chat with {cfg['title']}"):
             st.session_state.chat_open = not st.session_state.chat_open
-    st.markdown(f'<style>{btn_css}</style>', unsafe_allow_html=True)
+    btn_container.float(float_css_helper(
+        width="64px", right="24px", bottom="24px", z_index="9999",
+    ))
 
     if not st.session_state.chat_open:
         return
 
-    panel_css = float_css_helper(
-        width="360px", height="520px", right="20px", bottom="90px",
-        background="white", border="1px solid #ddd", border_radius="12px",
-        padding="12px", shadow=12, transition=0,
-    )
+    # Floating panel above the button.
     panel = st.container()
     with panel:
         st.markdown(f"**{cfg['title']}**")
@@ -75,7 +78,12 @@ def render_chat() -> None:
         if prompt:
             _handle_user_message(prompt, user, cfg)
             st.rerun()
-    panel.markdown(f'<style>{panel_css}</style>', unsafe_allow_html=True)
+    panel.float(float_css_helper(
+        width="380px", height="540px", right="24px", bottom="96px",
+        background="white", border="1px solid #ddd", border_radius="12px",
+        shadow=12, z_index="9999",
+        css="overflow-y:auto; padding:14px;",
+    ))
 
 
 def _handle_user_message(prompt: str, user: dict, cfg: dict) -> None:
