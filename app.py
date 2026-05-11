@@ -88,14 +88,14 @@ def render_landing():
 
     st.space("large")
 
-    with st.container(horizontal_alignment="center"):
-        st.title("⚡ ZPOTS")
-        st.write("AI-Powered Sports Court Booking Platform")
-
-    st.space("medium")
-
     _, col2, _ = st.columns([1, 2, 1])
     with col2:
+        with st.container(horizontal_alignment="center"):
+            st.title("⚡ ZPOTS")
+            st.write("AI-Powered Sports Court Booking Platform")
+
+        st.space("medium")
+
         left, right = st.columns(2, gap="medium")
 
         with left:
@@ -122,9 +122,9 @@ def render_landing():
                     st.session_state.flow = "owner"
                     st.rerun()
 
-    st.space("medium")
-    with st.container(horizontal_alignment="center"):
-        st.markdown('<span class="ai-tag">KINETIC PRECISION ENGINEERED</span>', unsafe_allow_html=True)
+        st.space("medium")
+        with st.container(horizontal_alignment="center"):
+            st.markdown('<span class="ai-tag">KINETIC PRECISION ENGINEERED</span>', unsafe_allow_html=True)
 
 
 # Main routing

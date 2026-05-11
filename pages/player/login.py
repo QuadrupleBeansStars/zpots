@@ -23,13 +23,13 @@ def render():
     col1, col2, col3 = st.columns([1, 1.3, 1])
     with col2:
         st.markdown("""
-        <div style="background:rgba(255,255,255,0.94);backdrop-filter:blur(24px);
-                    -webkit-backdrop-filter:blur(24px);border-radius:20px;
+        <div class="glass-card" style="background:#ffffff;border-radius:20px;
                     padding:40px 40px 8px;box-shadow:0 8px 24px rgba(0,0,0,0.25);">
             <h1 style="font-family:'Space Grotesk';font-size:2.1rem;line-height:1.1;
                        color:#1c2526 !important;font-weight:700;margin:0;">
                 Welcome Back,<br>Athlete</h1>
-            <p style="color:#3d4455 !important;font-size:14px;margin-top:8px;margin-bottom:0;">
+            <p style="color:#1c2526 !important;font-size:14px;margin-top:8px;margin-bottom:0;
+                      opacity:0.75;">
                 Log in or create an account to book your next game.</p>
         </div>
         """, unsafe_allow_html=True)

@@ -73,8 +73,8 @@ def render():
             <div style="margin-bottom:16px;">
                 <div style="font-family:'Lexend'; font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:#1a2600;">WEEKLY EARNINGS</div>
                 <div style="display:flex; align-items:baseline; gap:8px;">
-                    <span style="font-family:'Space Grotesk'; font-weight:700; font-size:2rem; color:#1a2600;">$1,420</span>
-                    <span style="font-size:12px; color:#506300;">+$204</span>
+                    <span style="font-family:'Space Grotesk'; font-weight:700; font-size:2rem; color:#1a2600;">฿1,420</span>
+                    <span style="font-size:12px; color:#506300;">+฿204</span>
                 </div>
             </div>
             <div>
@@ -105,8 +105,8 @@ def render():
         <div class="zpots-card">
             <span style="font-size:1.2rem;">📊</span>
             <div style="font-family:'Lexend'; font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455; margin-top:8px;">MARKET BENCHMARK</div>
-            <p style="font-size:13px; color:#3d4455; margin-top:8px;">Similar venues in your area are pricing Sunday mornings at <strong>$45/hr</strong>.</p>
-            <div style="font-family:'Inter'; font-size:13px; margin-top:4px;">Your: <strong>$38/hr</strong></div>
+            <p style="font-size:13px; color:#3d4455; margin-top:8px;">Similar venues in your area are pricing Sunday mornings at <strong>฿45/hr</strong>.</p>
+            <div style="font-family:'Inter'; font-size:13px; margin-top:4px;">Your: <strong>฿38/hr</strong></div>
         </div>
         """, unsafe_allow_html=True)
     with bottom_cols[1]:

@@ -20,11 +20,24 @@ _CONFIGS = {
         "run_turn": player_run_turn,
         "title": "ZPOTS Assistant",
         "supports_drafts": True,
+        "welcome": (
+            "Hi! I can find courts, check availability, book a slot, or manage your "
+            "bookings. Try:\n\n"
+            "• *find me a badminton court under 500 baht*\n"
+            "• *book bbc-01 tomorrow 6pm for 1 hour*\n"
+            "• *show my bookings*"
+        ),
     },
     "owner": {
         "run_turn": owner_run_turn,
         "title": "ZPOTS Owner Assistant",
         "supports_drafts": False,
+        "welcome": (
+            "Hi! I can answer business questions across your venues. Try:\n\n"
+            "• *what's my revenue this week?*\n"
+            "• *which upcoming bookings are highest no-show risk?*\n"
+            "• *which hours are predicted busiest?*"
+        ),
     },
 }
 
@@ -52,10 +65,16 @@ def render_chat() -> None:
     # Floating launcher button bottom-right.
     btn_container = st.container()
     with btn_container:
-        if st.button("💬", key="zpots_chat_toggle", help=f"Chat with {cfg['title']}"):
+        label = "✕" if st.session_state.chat_open else "💬"
+        if st.button(label, key="zpots_chat_toggle", help=f"Chat with {cfg['title']}",
+                     type="primary"):
             st.session_state.chat_open = not st.session_state.chat_open
+            st.rerun()
     btn_container.float(float_css_helper(
         width="64px", right="24px", bottom="24px", z_index="9999",
+        css=("& button { width:64px !important; height:64px !important; "
+             "border-radius:50% !important; font-size:24px !important; "
+             "box-shadow:0 6px 20px rgba(0,0,0,0.25) !important; padding:0 !important; }"),
     ))
 
     if not st.session_state.chat_open:
@@ -65,6 +84,9 @@ def render_chat() -> None:
     panel = st.container()
     with panel:
         st.markdown(f"**{cfg['title']}**")
+        if not st.session_state.chat_history and cfg.get("welcome"):
+            with st.chat_message("assistant"):
+                st.markdown(cfg["welcome"])
         for m in st.session_state.chat_history:
             if isinstance(m["content"], str):
                 with st.chat_message(m["role"]):

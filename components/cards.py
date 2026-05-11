@@ -97,20 +97,18 @@ def booking_card_player(booking, key_prefix="pbk"):
 
 
 def venue_card_owner(venue, key_prefix="ven"):
+    # Compact layout: 36px coloured left rail instead of a 70px header block.
     st.markdown(f"""
-    <div class="zpots-card" style="padding:0; overflow:hidden;">
-        <div style="height:70px; background:linear-gradient(135deg,{venue['color']},{venue['color']}cc);
-                    display:flex; align-items:center; justify-content:center;
-                    border-radius:16px 16px 0 0;">
-            <span style="font-size:24px; color:rgba(255,255,255,0.85);">🏟</span>
-        </div>
-        <div style="padding:12px 14px;">
-            <div style="font-weight:600; font-size:14px; color:#1c2526;">{venue['name']}</div>
+    <div class="zpots-card" style="padding:0; overflow:hidden; display:flex;
+                                    align-items:stretch; min-height:64px;">
+        <div style="width:6px; background:linear-gradient(180deg,{venue['color']},{venue['color']}cc);"></div>
+        <div style="padding:10px 14px; flex:1;">
+            <div style="font-weight:600; font-size:13px; color:#1c2526;">{venue['name']}</div>
             <div class="eyebrow" style="font-size:9px; margin-top:2px;">{venue['location']}</div>
-            <div style="display:flex; justify-content:space-between; margin-top:6px;
-                        font-size:12px; color:#3d4455;">
+            <div style="display:flex; justify-content:space-between; margin-top:4px;
+                        font-size:11px; color:#3d4455;">
                 <span>{venue.get('courts_count',0)} courts</span>
-                <span class="display" style="color:#2E6B00; font-size:14px;">
+                <span class="display" style="color:#2E6B00; font-size:13px;">
                     ฿{venue.get('revenue_today',0)}</span>
             </div>
         </div>

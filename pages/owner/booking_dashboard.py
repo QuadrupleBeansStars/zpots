@@ -23,7 +23,7 @@ def render():
         <div style="display:flex; justify-content:space-between; align-items:flex-start;">
             <div>
                 <div style="font-family:'Lexend'; font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:rgba(255,255,255,0.7);">TOTAL REVENUE TODAY</div>
-                <div style="font-family:'Space Grotesk'; font-weight:700; font-size:3rem; color:white; line-height:1.1;">$4,280.50</div>
+                <div style="font-family:'Space Grotesk'; font-weight:700; font-size:3rem; color:white; line-height:1.1;">฿4,280.50</div>
                 <div style="font-size:13px; color:rgba(255,255,255,0.8); margin-top:4px;">📈 +12.5% from yesterday</div>
             </div>
             <div>
@@ -34,15 +34,15 @@ def render():
         <div style="display:flex; gap:1rem; margin-top:1.5rem;">
             <div style="background:rgba(255,255,255,0.15); border-radius:12px; padding:8px 16px;">
                 <div style="font-size:10px; color:rgba(255,255,255,0.6);">MAIN ARENA</div>
-                <div style="font-family:'Space Grotesk'; font-weight:700; color:white;">$1,240</div>
+                <div style="font-family:'Space Grotesk'; font-weight:700; color:white;">฿1,240</div>
             </div>
             <div style="background:rgba(255,255,255,0.15); border-radius:12px; padding:8px 16px;">
                 <div style="font-size:10px; color:rgba(255,255,255,0.6);">PADEL POD 2</div>
-                <div style="font-family:'Space Grotesk'; font-weight:700; color:white;">$890</div>
+                <div style="font-family:'Space Grotesk'; font-weight:700; color:white;">฿890</div>
             </div>
             <div style="background:rgba(207,252,0,0.3); border-radius:12px; padding:8px 16px;">
                 <div style="font-size:10px; color:rgba(255,255,255,0.6);">INDOOR TURF</div>
-                <div style="font-family:'Space Grotesk'; font-weight:700; color:white;">$2,150</div>
+                <div style="font-family:'Space Grotesk'; font-weight:700; color:white;">฿2,150</div>
             </div>
         </div>
     </div>

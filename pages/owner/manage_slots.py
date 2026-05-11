@@ -50,7 +50,7 @@ def render():
 
     pred_cols = st.columns(4)
     with pred_cols[0]:
-        kpi_card("PREDICTED REVENUE", "$4,280.00", delta="↗ +10% vs LW", icon="💰")
+        kpi_card("PREDICTED REVENUE", "฿4,280.00", delta="↗ +10% vs LW", icon="💰")
     with pred_cols[1]:
         kpi_card("PEAK HOURS", "18:00–20:00", delta="Fri, Sat, Sun", icon="🕐")
     with pred_cols[2]:

@@ -52,8 +52,8 @@ def render():
         )
         fig.update_layout(height=240, margin=dict(l=0, r=0, t=10, b=0))
 
-    # Heatmap + Utilization row
-    heat_col, util_col = st.columns([1.5, 1], gap="medium")
+    # Heatmap + Utilization row (equal width so the charts visually match)
+    heat_col, util_col = st.columns(2, gap="medium")
 
     with heat_col:
         st.markdown('<div class="zpots-card" style="padding:20px;">', unsafe_allow_html=True)
@@ -126,7 +126,8 @@ def render():
 
     with risk_col:
         st.markdown("""
-        <div class="zpots-card" style="padding:20px;">
+        <div class="zpots-card" style="padding:20px;min-height:260px;
+                    display:flex;flex-direction:column;">
             <h3 class="display" style="font-size:16px;">No-Show Risk Analysis ⚠️</h3>
             <div class="eyebrow" style="color:#b02500;margin-top:2px;">PRIORITY: HIGH INTERVENTION</div>
             <div class="zpots-card-surface" style="display:flex;justify-content:space-between;
@@ -135,7 +136,7 @@ def render():
                 <span class="display" style="font-size:16px;">12%
                     <span style="font-size:12px;color:#b02500;">(+4% WoW)</span></span>
             </div>
-            <div class="zpots-card-surface" style="padding:14px;margin-top:8px;">
+            <div class="zpots-card-surface" style="padding:14px;margin-top:8px;flex:1;">
                 <div class="eyebrow">PRIMARY ROOT CAUSE</div>
                 <div style="font-size:13px;margin-top:4px;">
                     Traffic delays on Rama IV during rain predicted (70% probability).</div>
@@ -145,10 +146,11 @@ def render():
 
     with mit_col:
         st.markdown("""
-        <div class="zpots-card-surface" style="padding:20px;">
+        <div class="zpots-card-surface" style="padding:20px;min-height:260px;
+                    display:flex;flex-direction:column;">
             <h3 class="display" style="font-size:16px;margin-bottom:12px;">
                 AI Mitigation Strategies</h3>
-            <div style="display:flex;gap:10px;">
+            <div style="display:flex;gap:10px;flex:1;">
                 <div class="zpots-card" style="flex:1;padding:14px;">
                     <h4 style="font-size:13px;margin-bottom:4px;">Smart Reschedule</h4>
                     <p style="font-size:11px;color:#3d4455;line-height:1.5;">
@@ -166,4 +168,4 @@ def render():
             </div>
         </div>
         """, unsafe_allow_html=True)
-        st.button("Execute All", type="primary", key="execute_all_mit")
+        st.button("Execute All", type="primary", key="execute_all_mit", width='stretch')

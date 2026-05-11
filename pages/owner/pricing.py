@@ -58,7 +58,8 @@ def render():
 
     st.markdown("<div style='height:1rem;'></div>", unsafe_allow_html=True)
 
-    left_col, right_col = st.columns([1.2, 1])
+    # Editable form gets the dominant column; AI insight is supporting.
+    left_col, right_col = st.columns([1.6, 1])
 
     with left_col:
         st.markdown("""

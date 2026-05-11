@@ -42,6 +42,8 @@ dev.env
 .DS_Store
 Thumbs.db
 zpots.db
+zpots.db-shm
+zpots.db-wal
 
 # ML
 ml/notebooks/.ipynb_checkpoints/
