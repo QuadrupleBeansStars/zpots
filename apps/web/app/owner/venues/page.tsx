@@ -46,7 +46,14 @@ function VenuesPageInner() {
               <div key={c.id} className="zpots-card overflow-hidden">
                 <div className="h-40 flex items-center justify-center relative" style={{ background: `linear-gradient(135deg,${c.color},${c.color}cc)` }}>
                   <span className="text-5xl">{SPORT_ICON[c.sport] ?? '🏟'}</span>
-                  <span className="absolute top-3 left-3"><StatusBadge status="confirmed">● {c.status}</StatusBadge></span>
+                  {/* Inline pill — design system's status-confirmed uses 22% alpha lime which
+                      is unreadable against the dark court hero. Use the full-strength lime. */}
+                  <span
+                    className="absolute top-3 left-3 px-3 py-1 rounded-pill font-eyebrow text-[10px] uppercase tracking-wider"
+                    style={{ background: '#CFFC00', color: '#1E4A00' }}
+                  >
+                    ● {c.status}
+                  </span>
                 </div>
                 <div className="p-4">
                   <div className="font-bold">{c.name}</div>
