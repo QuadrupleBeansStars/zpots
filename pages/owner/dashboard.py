@@ -54,8 +54,6 @@ def render():
         ● Apply Dynamic Pricing for this weekend</div>
 </div>
 """, unsafe_allow_html=True)
-        if st.button("Apply Now", type="primary", key="apply_ai", width='stretch'):
-            st.toast("AI pricing applied!")
 
     st.space("small")
 

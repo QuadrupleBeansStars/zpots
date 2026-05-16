@@ -16,18 +16,18 @@ def render():
     col1, col2, col3 = st.columns([1, 1.3, 1])
     with col2:
         st.markdown("""
-        <div style="background:rgba(255,255,255,0.94);backdrop-filter:blur(24px);
-                    -webkit-backdrop-filter:blur(24px);border-radius:20px;
+        <div class="glass-card" style="background:#ffffff;border-radius:20px;
                     padding:40px 40px 8px;box-shadow:0 8px 24px rgba(0,0,0,0.3);">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
                 <span style="font-family:'Space Grotesk';font-weight:700;font-size:18px;
-                             color:#1c2526;letter-spacing:0.05em;">⚡ ZPOTS Admin</span>
+                             color:#1c2526 !important;letter-spacing:0.05em;">⚡ ZPOTS Admin</span>
             </div>
             <span class="ai-tag">ELITE VENUE PARTNER</span>
             <h1 style="font-family:'Space Grotesk';font-size:2rem;line-height:1.1;
                        margin-top:12px;color:#1c2526 !important;font-weight:700;">
                 Venue Control,<br>Supercharged.</h1>
-            <p style="color:#3d4455 !important;font-size:14px;margin-top:8px;margin-bottom:0;">
+            <p style="color:#1c2526 !important;font-size:14px;margin-top:8px;margin-bottom:0;
+                      opacity:0.75;">
                 Sign in to manage your Bangkok sports facilities.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -51,9 +51,9 @@ def render():
 
         st.markdown("""
         <div style="text-align:center;margin-top:1.5rem;margin-bottom:8px;
-                    font-size:13px;color:#3d4455;">
-            New operator?
-            <strong style="color:#1E4A00;cursor:pointer;">Contact us to register your venue.</strong>
-            <br><small>Demo: owner@zpots.ai / owner123</small>
+                    font-size:13px;color:rgba(255,255,255,0.75) !important;">
+            <span style="color:rgba(255,255,255,0.75) !important;">New operator?</span>
+            <strong style="color:#CFFC00 !important;cursor:pointer;">Contact us to register your venue.</strong>
+            <br><small style="color:rgba(255,255,255,0.6) !important;">Demo: owner@zpots.ai / owner123</small>
         </div>
         """, unsafe_allow_html=True)

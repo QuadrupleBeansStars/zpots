@@ -23,7 +23,7 @@ def render():
         <div style="display:flex; justify-content:space-between; align-items:flex-start;">
             <div>
                 <div style="font-family:'Lexend'; font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:rgba(255,255,255,0.7);">TOTAL REVENUE TODAY</div>
-                <div style="font-family:'Space Grotesk'; font-weight:700; font-size:3rem; color:white; line-height:1.1;">$4,280.50</div>
+                <div style="font-family:'Space Grotesk'; font-weight:700; font-size:3rem; color:white; line-height:1.1;">฿4,280.50</div>
                 <div style="font-size:13px; color:rgba(255,255,255,0.8); margin-top:4px;">📈 +12.5% from yesterday</div>
             </div>
             <div>
@@ -34,15 +34,15 @@ def render():
         <div style="display:flex; gap:1rem; margin-top:1.5rem;">
             <div style="background:rgba(255,255,255,0.15); border-radius:12px; padding:8px 16px;">
                 <div style="font-size:10px; color:rgba(255,255,255,0.6);">MAIN ARENA</div>
-                <div style="font-family:'Space Grotesk'; font-weight:700; color:white;">$1,240</div>
+                <div style="font-family:'Space Grotesk'; font-weight:700; color:white;">฿1,240</div>
             </div>
             <div style="background:rgba(255,255,255,0.15); border-radius:12px; padding:8px 16px;">
                 <div style="font-size:10px; color:rgba(255,255,255,0.6);">PADEL POD 2</div>
-                <div style="font-family:'Space Grotesk'; font-weight:700; color:white;">$890</div>
+                <div style="font-family:'Space Grotesk'; font-weight:700; color:white;">฿890</div>
             </div>
             <div style="background:rgba(207,252,0,0.3); border-radius:12px; padding:8px 16px;">
                 <div style="font-size:10px; color:rgba(255,255,255,0.6);">INDOOR TURF</div>
-                <div style="font-family:'Space Grotesk'; font-weight:700; color:white;">$2,150</div>
+                <div style="font-family:'Space Grotesk'; font-weight:700; color:white;">฿2,150</div>
             </div>
         </div>
     </div>
@@ -76,8 +76,8 @@ def render():
             st.selectbox("Sort", ["Time Ascending", "Time Descending", "Status"], key="sort_filter")
 
         st.markdown("""
-        <div style="display:grid; grid-template-columns: 2fr 2fr 1fr 1fr 0.5fr; gap:0; padding:12px 16px; font-family:'Lexend'; font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#3d4455;">
-            <div>CUSTOMER</div><div>SESSION INFO</div><div>STATUS</div><div>RISK</div><div>ACTION</div>
+        <div style="display:grid; grid-template-columns: 2fr 2fr 1fr 1fr; gap:0; padding:12px 16px; font-family:'Lexend'; font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#3d4455;">
+            <div>CUSTOMER</div><div>SESSION INFO</div><div>STATUS</div><div>RISK</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -132,7 +132,7 @@ def render():
             risk_class = TIER_TO_CSS[tier]
 
             st.markdown(f"""
-            <div class="zpots-card" style="display:grid; grid-template-columns: 2fr 2fr 1fr 1fr 0.5fr; gap:0; align-items:center; margin-bottom:8px; padding:12px 16px;">
+            <div class="zpots-card" style="display:grid; grid-template-columns: 2fr 2fr 1fr 1fr; gap:0; align-items:center; margin-bottom:8px; padding:12px 16px;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <div style="width:36px; height:36px; border-radius:50%; background:{booking['avatar_color']}; color:white; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600;">{booking['customer'][0]}</div>
                     <div>
@@ -146,7 +146,6 @@ def render():
                 </div>
                 <div><span class="status-badge {status_class}">{booking['status']}</span></div>
                 <div><span class="status-badge {risk_class}">{tier}</span></div>
-                <div style="text-align:center; cursor:pointer; font-size:18px;">⋮</div>
             </div>
             """, unsafe_allow_html=True)
 

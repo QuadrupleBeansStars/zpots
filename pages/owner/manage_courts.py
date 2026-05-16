@@ -16,66 +16,87 @@ def render():
     <p style="color:#3d4455; font-size:14px;">Real-time performance metrics and availability control for your elite sports facilities.</p>
     """, unsafe_allow_html=True)
 
-    st.radio("View", ["GRID", "LIST"], horizontal=True, key="courts_view", label_visibility="collapsed")
+    view = st.radio("View", ["GRID", "LIST"], horizontal=True, key="courts_view",
+                    label_visibility="collapsed")
 
     st.markdown("<div style='height:1rem;'></div>", unsafe_allow_html=True)
 
     court_col, insight_col = st.columns([1.5, 1])
 
+    SPORT_ICON = {"Badminton": "🏸", "Football": "⚽", "Padel": "🎾",
+                  "Basketball": "🏀", "Tennis": "🎾"}
+
     with court_col:
-        court = COURTS[0]
-        st.markdown(f"""
-        <div class="zpots-card" style="padding:0; overflow:hidden; margin-bottom:1rem;">
-            <div class="court-image" style="background:linear-gradient(135deg, {court['color']}, {court['color']}cc); height:200px; position:relative;">
-                <span style="font-size:3rem;">🏸</span>
-                <span class="status-badge status-active" style="position:absolute; top:12px; left:12px; background:rgba(207,252,0,0.9);">● ACTIVE</span>
-            </div>
-            <div style="padding:1.2rem;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <div style="font-family:'Inter'; font-weight:700; font-size:18px;">{court['name']}</div>
-                        <div style="font-size:13px; color:#3d4455;">📍 {court['district']}, Bangkok</div>
-                    </div>
-                    <span style="font-size:18px; cursor:pointer;">✏️</span>
-                </div>
-                <div style="display:flex; gap:2rem; margin-top:12px;">
-                    <div>
-                        <div style="font-family:'Lexend'; font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">UTILIZATION</div>
-                        <div style="font-family:'Space Grotesk'; font-weight:700; font-size:1.3rem;">{court['utilization']}%</div>
-                    </div>
-                    <div>
-                        <div style="font-family:'Lexend'; font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">PEAK HOURS</div>
-                        <div style="font-family:'Space Grotesk'; font-weight:700; font-size:1.3rem;">{court['peak_hours']}</div>
-                    </div>
-                    <div>
-                        <div style="font-family:'Lexend'; font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">AI EFFICIENCY</div>
-                        <div style="font-family:'Space Grotesk'; font-weight:700; font-size:1.3rem; font-style:italic;">{court['ai_efficiency']}</div>
-                    </div>
-                </div>
+        if view == "GRID":
+            for court in COURTS:
+                icon = SPORT_ICON.get(court["sport"], "🏟")
+                st.markdown(f"""
+<div class="zpots-card" style="padding:0; overflow:hidden; margin-bottom:1rem;">
+    <div class="court-image" style="background:linear-gradient(135deg, {court['color']}, {court['color']}cc); height:160px; position:relative; display:flex; align-items:center; justify-content:center;">
+        <span style="font-size:3rem;">{icon}</span>
+        <span class="status-badge status-active" style="position:absolute; top:12px; left:12px; background:rgba(207,252,0,0.9);">● {court['status']}</span>
+    </div>
+    <div style="padding:1.2rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <div style="font-family:'Inter'; font-weight:700; font-size:18px;">{court['name']}</div>
+                <div style="font-size:13px; color:#3d4455;">📍 {court['district']}, Bangkok</div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-
-        if st.button("Edit Court", key="edit_court_1", width='stretch'):
-            navigate("add_edit_court", editing_court_id=court["id"])
-
-        st.markdown("""
-        <div class="zpots-card" style="padding:0; overflow:hidden; margin-top:1rem;">
-            <div class="court-image" style="background:linear-gradient(135deg, #2a2a2a, #3a3a3a); height:120px; position:relative;">
-                <span style="font-size:2rem;">🏗</span>
-                <span class="status-badge status-maintenance" style="position:absolute; top:12px; left:12px; background:rgba(255,165,0,0.9); color:white;">MAINTENANCE</span>
+        <div style="display:flex; gap:2rem; margin-top:12px;">
+            <div>
+                <div style="font-family:'Lexend'; font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">UTILIZATION</div>
+                <div style="font-family:'Space Grotesk'; font-weight:700; font-size:1.3rem;">{court['utilization']}%</div>
             </div>
-            <div style="padding:1rem;">
-                <div style="font-family:'Inter'; font-weight:600; font-size:16px;">Ari Sports Center</div>
-                <div style="font-size:12px; color:#3d4455;">Status: Re-flooring in progress</div>
-                <div style="display:flex; justify-content:space-between; margin-top:8px;">
-                    <span style="font-size:12px; color:#3d4455;">Estimated Completion</span>
-                    <span style="font-family:'Inter'; font-weight:600;">Oct 24, 2023</span>
-                </div>
+            <div>
+                <div style="font-family:'Lexend'; font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">PEAK HOURS</div>
+                <div style="font-family:'Space Grotesk'; font-weight:700; font-size:1.3rem;">{court['peak_hours']}</div>
+            </div>
+            <div>
+                <div style="font-family:'Lexend'; font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">AI EFFICIENCY</div>
+                <div style="font-family:'Space Grotesk'; font-weight:700; font-size:1.3rem; font-style:italic;">{court['ai_efficiency']}</div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-        st.button("Update Timeline", key="update_timeline")
+    </div>
+</div>
+""", unsafe_allow_html=True)
+                if st.button("Edit Court", key=f"edit_court_{court['id']}", width='stretch'):
+                    navigate("add_edit_court", editing_court_id=court["id"])
+        else:  # LIST view — compact one-row-per-court
+            st.markdown("""
+<div class="zpots-card" style="padding:0; overflow:hidden;">
+    <div style="display:grid; grid-template-columns:48px 2fr 1fr 1fr 1fr 100px;
+                gap:12px; padding:12px 16px; background:#f6f6ff;
+                font-family:'Lexend'; font-size:10px; text-transform:uppercase;
+                letter-spacing:0.08em; color:#3d4455;">
+        <div></div><div>Court</div><div>District</div><div>Utilization</div>
+        <div>Peak hours</div><div></div>
+    </div>
+""", unsafe_allow_html=True)
+            for court in COURTS:
+                icon = SPORT_ICON.get(court["sport"], "🏟")
+                st.markdown(f"""
+<div style="display:grid; grid-template-columns:48px 2fr 1fr 1fr 1fr 100px;
+            gap:12px; padding:14px 16px; border-bottom:1px solid #eef0ff;
+            align-items:center; background:white;">
+    <div style="width:36px; height:36px; border-radius:8px;
+                background:linear-gradient(135deg, {court['color']}, {court['color']}cc);
+                display:flex; align-items:center; justify-content:center;
+                font-size:18px;">{icon}</div>
+    <div>
+        <div style="font-weight:600; font-size:14px;">{court['name']}</div>
+        <div style="font-size:11px; color:#3d4455;">{court['sport']}</div>
+    </div>
+    <div style="font-size:13px;">{court['district']}</div>
+    <div style="font-family:'Space Grotesk'; font-weight:700;">{court['utilization']}%</div>
+    <div style="font-size:13px;">{court['peak_hours']}</div>
+    <div></div>
+</div>
+""", unsafe_allow_html=True)
+                # Inline Edit per row (Streamlit can't embed buttons in markdown HTML).
+                if st.button("Edit", key=f"list_edit_{court['id']}"):
+                    navigate("add_edit_court", editing_court_id=court["id"])
+            st.markdown("</div>", unsafe_allow_html=True)
 
     with insight_col:
         st.markdown("""

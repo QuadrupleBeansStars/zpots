@@ -62,27 +62,35 @@ def render():
     st.markdown(f"# {court['name'].upper()}")
     st.markdown(f"📍 {court['location']}")
 
-    # Amenities
+    # Amenities — render as a single responsive CSS grid (not st.columns(4)) so
+    # narrow viewports / mid-navigation reflows don't squash each cell to a
+    # one-character column.
     st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
     amenity_data = [
-        ("❄️","Climate","Full AC"),
-        ("🅿️","Parking","Free (50+ Slots)"),
-        ("🚿","Facilities","Changing Rooms"),
-        ("💧","Water","Dispenser"),
+        ("❄️", "Climate", "Full AC"),
+        ("🅿️", "Parking", "Free (50+ Slots)"),
+        ("🚿", "Facilities", "Changing Rooms"),
+        ("💧", "Water", "Dispenser"),
     ]
-    am_cols = st.columns(4)
-    for i, amenity in enumerate(court.get("amenities", amenity_data)):
+    amenities = court.get("amenities", amenity_data)
+    cells = []
+    for i, amenity in enumerate(amenities):
         label = amenity["label"] if isinstance(amenity, dict) else amenity_data[min(i, 3)][1]
         value = amenity["value"] if isinstance(amenity, dict) else amenity_data[min(i, 3)][2]
-        emoji = ["❄️","🅿️","🚿","💧"][min(i, 3)]
-        with am_cols[i % 4]:
-            st.markdown(f"""
-            <div class="zpots-card-surface" style="padding:16px;text-align:center;">
-                <div style="font-size:22px;">{emoji}</div>
-                <div class="eyebrow" style="font-size:9px;margin-top:4px;">{label}</div>
-                <div style="font-weight:600;font-size:13px;color:#1c2526;margin-top:2px;">{value}</div>
-            </div>
-            """, unsafe_allow_html=True)
+        emoji = ["❄️", "🅿️", "🚿", "💧"][min(i, 3)]
+        cells.append(
+            f'<div class="zpots-card-surface" style="padding:16px;text-align:center;min-width:0;">'
+            f'<div style="font-size:22px;">{emoji}</div>'
+            f'<div class="eyebrow" style="font-size:9px;margin-top:4px;">{label}</div>'
+            f'<div style="font-weight:600;font-size:13px;color:#1c2526;margin-top:2px;">{value}</div>'
+            f'</div>'
+        )
+    st.markdown(
+        '<div style="display:grid;'
+        'grid-template-columns:repeat(auto-fit,minmax(140px,1fr));'
+        'gap:12px;">' + "".join(cells) + '</div>',
+        unsafe_allow_html=True,
+    )
 
     st.markdown("<div style='height:1.5rem;'></div>", unsafe_allow_html=True)
 

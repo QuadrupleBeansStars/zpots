@@ -58,7 +58,8 @@ def render():
 
     st.markdown("<div style='height:1rem;'></div>", unsafe_allow_html=True)
 
-    left_col, right_col = st.columns([1.2, 1])
+    # Editable form gets the dominant column; AI insight is supporting.
+    left_col, right_col = st.columns([1.6, 1])
 
     with left_col:
         st.markdown("""
@@ -91,19 +92,6 @@ def render():
 
         st.markdown("<div style='height:1rem;'></div>", unsafe_allow_html=True)
 
-        st.markdown("""
-        <div class="zpots-card" style="display:flex; justify-content:space-between; align-items:center;">
-            <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-size:1.2rem;">🤖</span>
-                <div>
-                    <div style="font-family:'Inter'; font-weight:600;">AI Dynamic Pricing</div>
-                    <div style="font-size:12px; color:#3d4455;">Auto-adjust rates based on booking velocity</div>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        st.toggle("Enable", value=True, key="ai_pricing_toggle", label_visibility="collapsed")
-
         st.markdown("<div style='height:1rem;'></div>", unsafe_allow_html=True)
         comp_col, occ_col = st.columns(2)
         with comp_col:
@@ -129,9 +117,6 @@ def render():
             </div>
         </div>
         """, unsafe_allow_html=True)
-
-        if st.button("Apply Suggested Pricing →", type="primary", key="apply_pricing", width='stretch'):
-            st.toast("AI pricing applied!")
 
         st.markdown("<div style='height:1rem;'></div>", unsafe_allow_html=True)
         st.markdown('<div class="zpots-card"><div style="font-family:\'Lexend\'; font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:#3d4455;">PRICING ELASTICITY</div></div>', unsafe_allow_html=True)
