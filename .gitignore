@@ -47,3 +47,13 @@ zpots.db-wal
 
 # ML
 ml/notebooks/.ipynb_checkpoints/
+
+# Next.js (apps/web)
+apps/web/node_modules/
+apps/web/.next/
+apps/web/out/
+apps/web/.env.local
+apps/web/.env.*.local
+apps/web/next-env.d.ts
+apps/web/test-results/
+apps/web/playwright-report/
