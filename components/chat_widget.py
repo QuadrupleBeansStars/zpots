@@ -62,6 +62,25 @@ def render_chat() -> None:
         st.session_state.pending_draft = None
         st.session_state.chat_open = False
 
+    # Style the launcher button as a 64px circle. float_css_helper's `css=` only
+    # accepts property:value pairs for the container's inline style, so we inject
+    # a real <style> block that targets the button inside the floating container.
+    st.markdown("""
+    <style>
+    div.float button[kind="primary"]:has(div p:only-child) {
+        width: 64px !important;
+        height: 64px !important;
+        min-height: 64px !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        font-size: 26px !important;
+        line-height: 1 !important;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.25) !important;
+    }
+    div.float button[kind="primary"] p { font-size: 26px !important; line-height: 1 !important; }
+    </style>
+    """, unsafe_allow_html=True)
+
     # Floating launcher button bottom-right.
     btn_container = st.container()
     with btn_container:
@@ -71,10 +90,7 @@ def render_chat() -> None:
             st.session_state.chat_open = not st.session_state.chat_open
             st.rerun()
     btn_container.float(float_css_helper(
-        width="64px", right="24px", bottom="24px", z_index="9999",
-        css=("& button { width:64px !important; height:64px !important; "
-             "border-radius:50% !important; font-size:24px !important; "
-             "box-shadow:0 6px 20px rgba(0,0,0,0.25) !important; padding:0 !important; }"),
+        width="72px", right="24px", bottom="24px", z_index="9999",
     ))
 
     if not st.session_state.chat_open:
