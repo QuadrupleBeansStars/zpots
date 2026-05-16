@@ -1,6 +1,7 @@
-/* ZPOTS shared UI kit styles — both player + owner kits import this */
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=Lexend:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+/* ZPOTS shared UI kit styles — both player + owner kits import this.
+   Google Fonts (Space Grotesk, Inter, Lexend, Material Symbols Rounded) are
+   loaded via <link> tags in app/layout.tsx instead of @import here, because
+   Tailwind's PostCSS pipeline doesn't always fetch remote @imports. */
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { font-family: 'Inter', sans-serif; color: #1C2526; font-size: 15px; background: #fff; -webkit-font-smoothing: antialiased; }
