@@ -13,6 +13,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        {/* Load Google Fonts via <link> rather than @import in globals.css —
+            Tailwind/PostCSS sometimes silently fails to fetch remote @imports,
+            which leaves Material Symbols spans showing their ligature text
+            (arrow_forward, ac_unit, …) instead of icons. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=Lexend:wght@300;400;500;600;700&display=swap"
+        />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        />
+      </head>
       <body className="font-sans bg-white text-zpots-ink antialiased">
         {children}
       </body>

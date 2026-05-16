@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# un-ignore lib/ (root .gitignore ignores it for Python venv, but we use it for TS modules)
+!lib/
