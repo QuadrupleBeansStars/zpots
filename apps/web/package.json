@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed"
   },
   "dependencies": {
     "next": "16.2.6",
@@ -15,6 +17,7 @@
     "recharts": "^3.8.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
