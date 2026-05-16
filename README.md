@@ -1,8 +1,12 @@
 # ZPOTS
 
-Sports court booking platform built with Streamlit. Two user roles — players (search, book, check in, leave feedback) and venue owners (manage courts, slots, pricing, view bookings, ML-driven insights).
+Sports court booking platform — currently mid-migration from Streamlit to Next.js 14 + FastAPI. **Both stacks run side-by-side** during the migration: Streamlit stays at the repo root (fully runnable, no reconfig needed), Next.js lives at `apps/web/`.
+
+Two user roles — players (search, book, check in, leave feedback) and venue owners (manage courts, slots, pricing, view bookings, ML-driven insights).
 
 ## Quick start
+
+### Streamlit (current production, always runnable)
 
 This project uses the conda env **`MADT`**.
 
@@ -14,19 +18,39 @@ streamlit run app.py
 
 Open `http://localhost:8501`.
 
+### Next.js (in progress — Phase 1+)
+
+```bash
+cd apps/web
+pnpm install
+pnpm dev          # http://localhost:3000
+pnpm test         # Playwright smoke
+pnpm build        # production build
+```
+
+Requires Node 20+ and `pnpm` (install with `npm install -g pnpm` if missing).
+
+## Migration progress
+
+See `docs/superpowers/specs/2026-05-16-nextjs-migration-design.md` for the overall plan and `docs/superpowers/plans/2026-05-16-phase1-nextjs-scaffold.md` for Phase 1 (scaffold + landing page).
+
 ## Project layout
 
 ```
 .
-├── app.py                # entry point, page router
-├── components/           # shared UI (CSS, navigation)
+├── apps/
+│   └── web/              # Next.js 14 app (in progress)
+├── app.py                # Streamlit entry point, page router
+├── components/           # Streamlit shared UI (CSS, navigation)
 ├── data/                 # dummy data + SQLite database
 ├── pages/
-│   ├── player/           # login, home, search, court_details, booking,
-│   │                     # confirmation, my_bookings, checkin, feedback
-│   └── owner/            # login, dashboard, manage_courts, add_edit_court,
-│                         # manage_slots, pricing, booking_dashboard,
+│   ├── player/           # Streamlit player pages — login, home, search, court_details,
+│   │                     # booking, confirmation, my_bookings, checkin, feedback
+│   └── owner/            # Streamlit owner pages — login, dashboard, manage_courts,
+│                         # add_edit_court, manage_slots, pricing, booking_dashboard,
 │                         # ai_insights, optimization
+├── agents/               # Streamlit chat agents (player + owner)
+├── handoff/              # design system + reference TSX components (for Next.js work)
 ├── utils/
 │   └── ml_inference.py   # bridge: trained ML artifacts → app
 ├── ml/                   # self-contained ML workspace (see ml/README.md)
