@@ -6,13 +6,13 @@ import { Icon } from './Icon';
 import { Button } from './Button';
 
 const NAV = [
-  { key: 'dashboard', icon: 'dashboard', label: 'Dashboard', href: '/' },
-  { key: 'courts', icon: 'stadium', label: 'Venue Manager', href: '/venues' },
-  { key: 'slots', icon: 'calendar_month', label: 'Slot Control', href: '/slots' },
-  { key: 'pricing', icon: 'payments', label: 'Pricing', href: '/pricing' },
-  { key: 'bookings', icon: 'list_alt', label: 'Bookings', href: '/bookings' },
-  { key: 'insights', icon: 'smart_toy', label: 'AI Insights', href: '/insights' },
-  { key: 'opt', icon: 'bolt', label: 'Optimization', href: '/optimization' },
+  { key: 'dashboard', icon: 'dashboard',       label: 'Dashboard',     href: '/owner' },
+  { key: 'courts',    icon: 'stadium',         label: 'Venue Manager', href: '/owner/venues' },
+  { key: 'slots',     icon: 'calendar_month',  label: 'Slot Control',  href: '/owner/slots' },
+  { key: 'pricing',   icon: 'payments',        label: 'Pricing',       href: '/owner/pricing' },
+  { key: 'bookings',  icon: 'list_alt',        label: 'Bookings',      href: '/owner/bookings' },
+  { key: 'insights',  icon: 'smart_toy',       label: 'AI Insights',   href: '/owner/insights' },
+  { key: 'opt',       icon: 'bolt',            label: 'Optimization',  href: '/owner/optimization' },
 ];
 
 export function OwnerSidebar() {
@@ -50,7 +50,7 @@ export function OwnerSidebar() {
       </div>
       <div style={{ height: 1, background: '#2A3E2A', margin: '4px 0 14px' }} />
       {NAV.map((it) => {
-        const active = pathname === it.href || (it.href !== '/' && pathname.startsWith(it.href));
+        const active = pathname === it.href || (it.href !== '/owner' && pathname.startsWith(it.href));
         return (
           <Link
             key={it.key}
@@ -75,9 +75,11 @@ export function OwnerSidebar() {
         );
       })}
       <div style={{ flex: 1 }} />
-      <Button variant="primary" icon="add_circle" style={{ justifyContent: 'center', padding: '10px 14px' }}>
-        Add New Court
-      </Button>
+      <Link href="/owner/venues/new" style={{ textDecoration: 'none' }}>
+        <Button variant="primary" icon="add_circle" style={{ justifyContent: 'center', padding: '10px 14px', width: '100%' }}>
+          Add New Court
+        </Button>
+      </Link>
       <div style={{ height: 1, background: '#2A3E2A', margin: '14px 0 10px' }} />
       <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', color: '#A8C4A5', fontSize: 13, textDecoration: 'none' }}>
         <Icon name="logout" style={{ fontSize: 18 }} />Back to home
