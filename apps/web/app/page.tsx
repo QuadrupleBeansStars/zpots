@@ -26,7 +26,7 @@ export default function LandingPage() {
             icon="🏟"
             title="I'm a Court Owner"
             description="Manage venues, optimize pricing, and grow your sports business."
-            href="/owner/login"
+            href="/owner-login"
             cta="Enter as Owner"
           />
         </div>
