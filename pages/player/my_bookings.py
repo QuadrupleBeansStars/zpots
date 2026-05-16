@@ -96,21 +96,22 @@ def render():
             st.markdown('<div style="text-align:center; padding:2rem; color:#3d4455;"><span style="font-size:2rem;">📋</span><p>No past bookings to show yet.</p></div>', unsafe_allow_html=True)
         else:
             for i, bk in enumerate(past):
-                st.markdown(f"""
-                <div class="zpots-card">
-                    <div style="display:flex; align-items:center; gap:1rem;">
-                        <span style="font-size:2rem;">🎾</span>
-                        <div style="flex:1;">
-                            <div style="font-family:'Inter'; font-weight:600; font-size:16px;">{bk['court_name']}</div>
-                            <div style="margin-top:6px;">
-                                <span style="font-size:13px; color:#3d4455;">📅 {bk['date']}</span>
-                                <span style="font-size:13px; color:#3d4455; margin-left:12px;">🕐 {bk['time_start']} - {bk['time_end']}</span>
-                            </div>
-                            <div style="font-size:12px; color:#3d4455; margin-top:4px;">ID: {bk['txn_id']}</div>
-                        </div>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
+                html = (
+                    f'<div class="zpots-card">'
+                    f'<div style="display:flex; align-items:center; gap:1rem;">'
+                    f'<span style="font-size:2rem;">🎾</span>'
+                    f'<div style="flex:1;">'
+                    f'<div style="font-family:\'Inter\'; font-weight:600; font-size:16px;">{bk["court_name"]}</div>'
+                    f'<div style="margin-top:6px;">'
+                    f'<span style="font-size:13px; color:#3d4455;">📅 {bk["date"]}</span>'
+                    f'<span style="font-size:13px; color:#3d4455; margin-left:12px;">🕐 {bk["time_start"]} - {bk["time_end"]}</span>'
+                    f'</div>'
+                    f'<div style="font-size:12px; color:#3d4455; margin-top:4px;">ID: {bk["txn_id"]}</div>'
+                    f'</div>'
+                    f'</div>'
+                    f'</div>'
+                )
+                st.markdown(html, unsafe_allow_html=True)
 
     st.markdown("<div style='height:1.5rem;'></div>", unsafe_allow_html=True)
 

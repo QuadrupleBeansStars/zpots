@@ -71,23 +71,18 @@ def render():
                 unsafe_allow_html=True,
             )
 
-    # Inline sport chips (JSX SearchScreen pattern)
+    # Sport filter — one row only (the old cosmetic chip row duplicated this).
     sports_inline = ['All', 'Badminton', 'Football', 'Basketball', 'Padel']
     if "selected_sport" not in st.session_state:
         st.session_state.selected_sport = "All"
 
-    chip_html = '<div style="display:flex;gap:8px;margin:12px 0 16px;align-items:center;">'
-    chip_html += '<span class="eyebrow">SPORT</span>'
-    for s in sports_inline:
-        cls = "chip-selected" if st.session_state.get("selected_sport") == s else "chip-default"
-        chip_html += f'<span class="chip {cls}">{s}</span>'
-    chip_html += '</div>'
-    st.markdown(chip_html, unsafe_allow_html=True)
-
-    sport_btn_cols = st.columns(len(sports_inline) + 2)
+    label_col, *sport_btn_cols = st.columns([0.6] + [1] * len(sports_inline) + [2])
+    with label_col:
+        st.markdown('<div style="padding-top:8px;"><span class="eyebrow">SPORT</span></div>',
+                    unsafe_allow_html=True)
     for i, s in enumerate(sports_inline):
         with sport_btn_cols[i]:
-            if st.button(s, key=f"sport_chip_{s}",
+            if st.button(s, key=f"sport_chip_{s}", width='stretch',
                          type="primary" if st.session_state.get("selected_sport") == s else "secondary"):
                 st.session_state.selected_sport = s
                 st.rerun()
