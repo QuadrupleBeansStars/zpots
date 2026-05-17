@@ -13,16 +13,19 @@ test('owner can sign in and navigate the sidebar', async ({ page }) => {
   // Dashboard heading
   await expect(page.getByRole('heading', { name: /Venue Performance/i })).toBeVisible();
 
-  // Sidebar items
+  // Top-nav items (Venue Manager → Courts, Slot Control → Slots, AI Insights → AI)
   for (const [linkLabel, expectedHeading] of [
-    ['Venue Manager', /Manage Courts/i],
-    ['Slot Control',  /Slot Control/i],
-    ['Pricing',       /Pricing Setup/i],
-    ['Bookings',      /^Bookings$/i],
-    ['AI Insights',   /AI Insights/i],
-    ['Optimization',  /Optimization Engine/i],
+    ['Courts',   /Manage Courts/i],
+    ['Slots',    /Slot Control/i],
+    ['Pricing',  /Pricing Setup/i],
+    ['Bookings', /^Bookings$/i],
+    ['AI',       /AI Insights/i],
   ] as const) {
-    await page.getByRole('link', { name: linkLabel, exact: false }).click();
+    await page.getByRole('link', { name: linkLabel, exact: true }).click();
     await expect(page.getByRole('heading', { name: expectedHeading })).toBeVisible();
   }
+
+  // Optimization removed from nav; access via direct URL
+  await page.goto('/owner/optimization');
+  await expect(page.getByRole('heading', { name: /Optimization Engine/i })).toBeVisible();
 });
