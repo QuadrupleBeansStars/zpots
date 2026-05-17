@@ -15,17 +15,21 @@ export function SlotCalendar({ calendar }: { calendar: Record<number, SlotBlock[
     <div className="grid grid-cols-7 gap-2">
       {DAYS.map((d, i) => (
         <div key={d.name} className="flex flex-col gap-2">
-          <div className={`text-center text-xs uppercase font-eyebrow py-2 rounded-card ${d.today ? 'bg-zpots-lime text-zpots-forest font-bold' : 'bg-zpots-surface text-zpots-muted'}`}>
+          <div className={`text-center text-xs uppercase font-geist py-2 rounded-kp-card ${d.today ? 'bg-lime text-ink-900 font-bold' : 'bg-surface-low text-ink-700/60'}`}>
             {d.name}<br />{d.date}
           </div>
           {(calendar[i] ?? []).map((slot, j) => (
-            <div key={`${slot.time}-${j}`} className="rounded-card p-2" style={{ background: slot.color }}>
-              <div className="font-semibold text-xs text-zpots-ink">{slot.label}</div>
-              <div className="text-[10px] text-zpots-muted">{slot.time}</div>
+            <div
+              key={`${slot.time}-${j}`}
+              className="rounded-kp-card p-2 transition-shadow duration-quick hover:shadow-lift cursor-pointer"
+              style={{ background: slot.color }}
+            >
+              <div className="font-geist font-semibold text-xs text-ink-900">{slot.label}</div>
+              <div className="text-[10px] text-ink-700/60">{slot.time}</div>
             </div>
           ))}
           {(calendar[i] ?? []).length === 0 && (
-            <div className="rounded-card p-3 bg-zpots-surface text-center text-zpots-muted text-xs cursor-pointer">+</div>
+            <div className="rounded-kp-card p-3 bg-surface-low text-center text-ink-700/60 text-xs cursor-pointer hover:shadow-lift transition-shadow duration-quick">+</div>
           )}
         </div>
       ))}
