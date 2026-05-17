@@ -1,6 +1,6 @@
 import type { Court, Booking } from './types';
 
-export const COURTS: Court[] = [
+export const FALLBACK_COURTS: Court[] = [
   {
     id: 'bbc-01',
     name: 'Bangkok Badminton Center',
@@ -168,39 +168,10 @@ export const COURTS: Court[] = [
   },
 ];
 
-export const SEEDED_BOOKINGS: Booking[] = [
-  {
-    id: 9001,
-    txn_id: 'ZP-90001',
-    court_id: 'bbc-01',
-    court_name: 'Bangkok Badminton Center',
-    date: '2026-05-06',
-    time_start: '18:00',
-    time_end: '20:00',
-    duration: 2,
-    total_price: 900,
-    status: 'CONFIRMED',
-    created_at: '2026-04-30T10:00:00Z',
-  },
-  {
-    id: 9002,
-    txn_id: 'ZP-90002',
-    court_id: 'pdl-04',
-    court_name: 'Padel House Sukhumvit',
-    date: '2026-05-11',
-    time_start: '07:00',
-    time_end: '08:00',
-    duration: 1,
-    total_price: 800,
-    status: 'CONFIRMED',
-    created_at: '2026-05-05T09:30:00Z',
-  },
-];
-
 const HOURS = Array.from({ length: 16 }, (_, i) => `${String(i + 7).padStart(2, '0')}:00`);
 
-export function getCourt(id: string): Court | undefined {
-  return COURTS.find((c) => c.id === id);
+export function fallbackCourt(id: string): Court | undefined {
+  return FALLBACK_COURTS.find((c) => c.id === id);
 }
 
 /**

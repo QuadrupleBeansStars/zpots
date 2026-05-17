@@ -1,7 +1,9 @@
 'use client';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, Suspense } from 'react';
-import { COURTS } from '@/lib/mock-data';
+import { useState, useEffect, Suspense } from 'react';
+import { getCourts } from '@/lib/data-client';
+import { FALLBACK_COURTS } from '@/lib/mock-data';
+import type { Court } from '@/lib/types';
 import { aiParseSearch } from '@/lib/api-client';
 import { CourtCard } from '@/components/CourtCard';
 import { Button } from '@/components/Button';
@@ -19,8 +21,13 @@ function SearchPageInner() {
   const maxPrice = maxPriceStr ? parseInt(maxPriceStr, 10) : null;
   const [query, setQuery] = useState(params.get('q') ?? '');
   const [searchLoading, setSearchLoading] = useState(false);
+  const [courts, setCourts] = useState<Court[]>(FALLBACK_COURTS);
 
-  const filtered = COURTS.filter((c) => {
+  useEffect(() => {
+    getCourts().then(setCourts).catch(() => setCourts(FALLBACK_COURTS));
+  }, []);
+
+  const filtered = courts.filter((c) => {
     if (sport !== 'All' && c.sport !== sport) return false;
     if (district && !c.district.toLowerCase().includes(district.toLowerCase())) return false;
     if (maxPrice !== null && c.price_per_hour > maxPrice) return false;

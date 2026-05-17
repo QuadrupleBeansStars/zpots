@@ -17,8 +17,8 @@ describe('useBookingStore', () => {
     expect(useBookingStore.getState().bookings).toEqual([]);
   });
 
-  it('addBooking appends a Booking derived from a draft', () => {
-    const txn = useBookingStore.getState().addBooking({
+  it('addBookingWithTxn appends a Booking derived from a draft', () => {
+    const txn = useBookingStore.getState().addBookingWithTxn('ZP-99001', {
       court_id: 'bbc-01',
       court_name: 'Bangkok Badminton Center',
       date: '2099-01-01',
@@ -34,7 +34,7 @@ describe('useBookingStore', () => {
     expect(stored[0].id).toBe(1);
   });
 
-  it('addBooking is idempotent when called twice with the same txn_id', () => {
+  it('addBookingWithTxn is idempotent when called twice with the same txn_id', () => {
     const draft = {
       court_id: 'bbc-01',
       court_name: 'Bangkok Badminton Center',
@@ -51,8 +51,8 @@ describe('useBookingStore', () => {
     expect(useBookingStore.getState().bookings).toHaveLength(1);
   });
 
-  it('cancelBooking flips status to CANCELLED', () => {
-    const txn = useBookingStore.getState().addBooking({
+  it('cancelBooking flips status to CANCELLED (optimistic fallback)', async () => {
+    useBookingStore.getState().addBookingWithTxn('ZP-99002', {
       court_id: 'bbc-01',
       court_name: 'BBC',
       date: '2099-01-01',
@@ -61,13 +61,14 @@ describe('useBookingStore', () => {
       duration: 1,
       total_price: 450,
     });
-    useBookingStore.getState().cancelBooking(txn);
+    // cancelBooking tries the API and falls back to optimistic local cancel
+    await useBookingStore.getState().cancelBooking('ZP-99002');
     const stored = useBookingStore.getState().bookings;
     expect(stored[0].status).toBe('CANCELLED');
   });
 
   it('getByTxn returns the matching booking', () => {
-    const txn = useBookingStore.getState().addBooking({
+    useBookingStore.getState().addBookingWithTxn('ZP-99003', {
       court_id: 'bbc-01',
       court_name: 'BBC',
       date: '2099-01-01',
@@ -76,7 +77,7 @@ describe('useBookingStore', () => {
       duration: 1,
       total_price: 450,
     });
-    expect(useBookingStore.getState().getByTxn(txn)?.court_id).toBe('bbc-01');
+    expect(useBookingStore.getState().getByTxn('ZP-99003')?.court_id).toBe('bbc-01');
     expect(useBookingStore.getState().getByTxn('nope')).toBeUndefined();
   });
 });

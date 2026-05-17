@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/Button';
 import { Eyebrow, AITag } from '@/components/Tags';
 import { aiCourtDescription } from '@/lib/api-client';
-import { COURTS } from '@/lib/mock-data';
+import { FALLBACK_COURTS } from '@/lib/mock-data';
 import type { Court } from '@/lib/types';
 
 const SPORTS = ['Badminton', 'Football', 'Basketball', 'Padel', 'Tennis', 'Volleyball'];
@@ -12,7 +12,7 @@ const SURFACES = ['Professional Mat', 'Premium Synthetic', 'Hardwood', 'Artifici
 const AMENITY_OPTIONS = ['AC Units', 'Pro Lighting', 'Locker Rooms', 'Water Station', 'AV Video', 'Showers', 'Cafe', 'Parking'];
 
 export function CourtForm({ mode, courtId }: { mode: 'new' | 'edit'; courtId?: string }) {
-  const existing: Court | undefined = courtId ? COURTS.find((c) => c.id === courtId) : undefined;
+  const existing: Court | undefined = courtId ? FALLBACK_COURTS.find((c) => c.id === courtId) : undefined;
   const [name, setName] = useState(existing?.name ?? '');
   const [sport, setSport] = useState(existing?.sport ?? 'Badminton');
   const [surface, setSurface] = useState(existing?.surface ?? 'Premium Synthetic');

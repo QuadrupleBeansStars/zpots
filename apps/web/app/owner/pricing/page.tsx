@@ -1,6 +1,8 @@
 'use client';
-import { useState } from 'react';
-import { COURTS } from '@/lib/mock-data';
+import { useState, useEffect } from 'react';
+import { getCourts } from '@/lib/data-client';
+import { FALLBACK_COURTS } from '@/lib/mock-data';
+import type { Court } from '@/lib/types';
 import { Button } from '@/components/Button';
 import { Eyebrow, AITag } from '@/components/Tags';
 import { formatPrice } from '@/lib/format';
@@ -8,6 +10,11 @@ import { formatPrice } from '@/lib/format';
 export default function PricingPage() {
   const [standard, setStandard] = useState(450);
   const [prime, setPrime] = useState(650);
+  const [courts, setCourts] = useState<Court[]>(FALLBACK_COURTS);
+
+  useEffect(() => {
+    getCourts().then(setCourts).catch(() => setCourts(FALLBACK_COURTS));
+  }, []);
 
   return (
     <div className="flex flex-col gap-6">
@@ -23,7 +30,7 @@ export default function PricingPage() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-        {COURTS.slice(0, 6).map((c) => (
+        {courts.slice(0, 6).map((c) => (
           <div key={c.id} className="zpots-card p-3">
             <div className="text-xs font-semibold truncate">{c.name}</div>
             <span className="font-eyebrow text-[9px] text-zpots-moss">ACTIVE</span>
