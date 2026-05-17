@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from routers import ai, health
+from routers import ai, health, ml
 
 app = FastAPI(
     title="ZPOTS API",
@@ -10,3 +10,4 @@ app = FastAPI(
 
 app.include_router(health.router)
 app.include_router(ai.router)
+app.include_router(ml.router)
