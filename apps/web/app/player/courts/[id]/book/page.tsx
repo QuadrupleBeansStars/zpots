@@ -1,7 +1,9 @@
 'use client';
 import { useRouter, useSearchParams, useParams } from 'next/navigation';
-import { useState, Suspense } from 'react';
-import { getCourt } from '@/lib/mock-data';
+import { useState, useEffect, Suspense } from 'react';
+import { getCourt } from '@/lib/data-client';
+import { fallbackCourt } from '@/lib/mock-data';
+import type { Court } from '@/lib/types';
 import { useBookingStore, generateTxnId } from '@/lib/booking-store';
 import { Button } from '@/components/Button';
 import { AITag, Eyebrow } from '@/components/Tags';
@@ -12,12 +14,25 @@ function BookingPageInner() {
   const params = useParams<{ id: string }>();
   const search = useSearchParams();
 
-  const court = getCourt(params.id);
+  const [court, setCourt] = useState<Court | undefined>(undefined);
+  const [courtLoading, setCourtLoading] = useState(true);
+
+  useEffect(() => {
+    getCourt(params.id)
+      .then(setCourt)
+      .catch(() => setCourt(fallbackCourt(params.id)))
+      .finally(() => setCourtLoading(false));
+  }, [params.id]);
+
   const date = search.get('date');
   const timeStart = search.get('time_start');
   const duration = parseInt(search.get('duration') ?? '1', 10);
 
   const [payMethod, setPayMethod] = useState<'card' | 'promptpay' | 'apple'>('card');
+
+  if (courtLoading) {
+    return <div className="text-zpots-muted text-sm py-10 text-center">Loading…</div>;
+  }
 
   if (!court || !date || !timeStart) {
     return (

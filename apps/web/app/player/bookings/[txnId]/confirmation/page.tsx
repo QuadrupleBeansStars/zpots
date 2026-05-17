@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useBookingStore } from '@/lib/booking-store';
-import { getCourt } from '@/lib/mock-data';
+import { fallbackCourt } from '@/lib/mock-data';
 import { Button } from '@/components/Button';
 import { AITag, Eyebrow } from '@/components/Tags';
 import { formatDateShort } from '@/lib/format';
@@ -10,7 +10,7 @@ import { formatDateShort } from '@/lib/format';
 export default function ConfirmationPage() {
   const params = useParams<{ txnId: string }>();
   const booking = useBookingStore((s) => s.getByTxn(params.txnId));
-  const court = booking ? getCourt(booking.court_id) : undefined;
+  const court = booking ? fallbackCourt(booking.court_id) : undefined;
 
   if (!booking) {
     return (

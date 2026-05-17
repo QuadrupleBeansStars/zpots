@@ -1,31 +1,24 @@
 import { describe, it, expect } from 'vitest';
-import { COURTS, SEEDED_BOOKINGS, getCourt, getFreeSlotStarts } from './mock-data';
+import { FALLBACK_COURTS, fallbackCourt, getFreeSlotStarts } from './mock-data';
 
-describe('COURTS', () => {
+describe('FALLBACK_COURTS', () => {
   it('exposes at least bbc-01 and sky-02 with required fields', () => {
-    const ids = COURTS.map((c) => c.id);
+    const ids = FALLBACK_COURTS.map((c) => c.id);
     expect(ids).toContain('bbc-01');
     expect(ids).toContain('sky-02');
-    const bbc = COURTS.find((c) => c.id === 'bbc-01')!;
+    const bbc = FALLBACK_COURTS.find((c) => c.id === 'bbc-01')!;
     expect(bbc.name).toBe('Bangkok Badminton Center');
     expect(bbc.sport).toBe('Badminton');
     expect(bbc.price_per_hour).toBe(450);
   });
 });
 
-describe('SEEDED_BOOKINGS', () => {
-  it('has at least one CONFIRMED booking', () => {
-    expect(SEEDED_BOOKINGS.length).toBeGreaterThan(0);
-    expect(SEEDED_BOOKINGS.every((b) => b.status === 'CONFIRMED' || b.status === 'CANCELLED')).toBe(true);
-  });
-});
-
-describe('getCourt', () => {
+describe('fallbackCourt', () => {
   it('returns the court by id', () => {
-    expect(getCourt('bbc-01')?.name).toBe('Bangkok Badminton Center');
+    expect(fallbackCourt('bbc-01')?.name).toBe('Bangkok Badminton Center');
   });
   it('returns undefined for unknown id', () => {
-    expect(getCourt('nope')).toBeUndefined();
+    expect(fallbackCourt('nope')).toBeUndefined();
   });
 });
 

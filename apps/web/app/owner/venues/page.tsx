@@ -1,10 +1,12 @@
 'use client';
-import { Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { COURTS } from '@/lib/mock-data';
+import { getCourts } from '@/lib/data-client';
+import { FALLBACK_COURTS } from '@/lib/mock-data';
+import type { Court } from '@/lib/types';
 import { Button } from '@/components/Button';
-import { Eyebrow, StatusBadge } from '@/components/Tags';
+import { Eyebrow } from '@/components/Tags';
 import { formatPrice } from '@/lib/format';
 
 const SPORT_ICON: Record<string, string> = {
@@ -15,6 +17,11 @@ function VenuesPageInner() {
   const router = useRouter();
   const params = useSearchParams();
   const view = (params.get('view') ?? 'grid').toLowerCase() === 'list' ? 'list' : 'grid';
+  const [courts, setCourts] = useState<Court[]>(FALLBACK_COURTS);
+
+  useEffect(() => {
+    getCourts().then(setCourts).catch(() => setCourts(FALLBACK_COURTS));
+  }, []);
 
   function setView(v: 'grid' | 'list') {
     const next = new URLSearchParams(params.toString());
@@ -42,7 +49,7 @@ function VenuesPageInner() {
       <div className="mt-6">
         {view === 'grid' ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {COURTS.map((c) => (
+            {courts.map((c) => (
               <div key={c.id} className="zpots-card overflow-hidden">
                 <div className="h-40 flex items-center justify-center relative" style={{ background: `linear-gradient(135deg,${c.color},${c.color}cc)` }}>
                   <span className="text-5xl">{SPORT_ICON[c.sport] ?? '🏟'}</span>
@@ -80,7 +87,7 @@ function VenuesPageInner() {
               <Eyebrow>Peak hours</Eyebrow>
               <Eyebrow>Price/hr</Eyebrow>
             </div>
-            {COURTS.map((c) => (
+            {courts.map((c) => (
               <div key={c.id} className="grid grid-cols-[48px_2fr_1fr_1fr_1fr_100px] gap-3 p-3 border-t border-zpots-mint items-center">
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg" style={{ background: `linear-gradient(135deg,${c.color},${c.color}cc)` }}>
                   {SPORT_ICON[c.sport] ?? '🏟'}

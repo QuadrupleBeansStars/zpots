@@ -1,8 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { notFound, useParams } from 'next/navigation';
-import { getCourt, getFreeSlotStarts, SEEDED_BOOKINGS } from '@/lib/mock-data';
+import { getCourt } from '@/lib/data-client';
+import { fallbackCourt, getFreeSlotStarts } from '@/lib/mock-data';
 import { useBookingStore } from '@/lib/booking-store';
+import type { Court } from '@/lib/types';
 import { SlotGrid } from '@/components/player/SlotGrid';
 import { BookingSummaryCard } from '@/components/player/BookingSummaryCard';
 import { AITag, Eyebrow } from '@/components/Tags';
@@ -15,8 +17,15 @@ function isoOffset(days: number): string {
 
 export default function CourtDetailsPage() {
   const params = useParams<{ id: string }>();
-  const court = getCourt(params.id);
-  if (!court) notFound();
+  const [court, setCourt] = useState<Court | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getCourt(params.id)
+      .then(setCourt)
+      .catch(() => setCourt(fallbackCourt(params.id)))
+      .finally(() => setLoading(false));
+  }, [params.id]);
 
   const upcoming = Array.from({ length: 7 }, (_, i) => isoOffset(i));
   const [date, setDate] = useState(upcoming[0]);
@@ -24,8 +33,13 @@ export default function CourtDetailsPage() {
   const [timeStart, setTimeStart] = useState<string | null>(null);
 
   const storeBookings = useBookingStore((s) => s.bookings);
-  const allBookings = [...SEEDED_BOOKINGS, ...storeBookings];
-  const freeStarts = getFreeSlotStarts(court.id, date, allBookings);
+  const freeStarts = court ? getFreeSlotStarts(court.id, date, storeBookings) : [];
+
+  if (loading) {
+    return <div className="text-zpots-muted text-sm py-10 text-center">Loading court…</div>;
+  }
+
+  if (!court) return notFound();
 
   return (
     <div>

@@ -1,7 +1,6 @@
 'use client';
 import Link from 'next/link';
 import { useBookingStore } from '@/lib/booking-store';
-import { SEEDED_BOOKINGS } from '@/lib/mock-data';
 import { currentUser } from '@/lib/auth-stub';
 import { StatusBadge } from '@/components/Tags';
 import { Button } from '@/components/Button';
@@ -9,7 +8,7 @@ import { formatDateShort } from '@/lib/format';
 
 export default function MyBookingsPage() {
   const storeBookings = useBookingStore((s) => s.bookings);
-  const all = [...storeBookings, ...SEEDED_BOOKINGS].sort((a, b) =>
+  const all = [...storeBookings].sort((a, b) =>
     b.date.localeCompare(a.date),
   );
 

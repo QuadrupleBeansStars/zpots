@@ -3,7 +3,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useBookingStore } from '@/lib/booking-store';
-import { SEEDED_BOOKINGS } from '@/lib/mock-data';
 import { StarRating } from '@/components/player/StarRating';
 import { FeedbackTagPicker } from '@/components/player/FeedbackTagPicker';
 import { Button } from '@/components/Button';
@@ -12,7 +11,7 @@ import { Eyebrow } from '@/components/Tags';
 export default function FeedbackPage() {
   const params = useParams<{ txnId: string }>();
   const storeBookings = useBookingStore((s) => s.bookings);
-  const booking = [...storeBookings, ...SEEDED_BOOKINGS].find((b) => b.txn_id === params.txnId);
+  const booking = storeBookings.find((b) => b.txn_id === params.txnId);
 
   const [rating, setRating] = useState(0);
   const [tags, setTags] = useState<string[]>([]);

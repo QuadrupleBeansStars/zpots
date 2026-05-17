@@ -1,6 +1,9 @@
 'use client';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { COURTS } from '@/lib/mock-data';
+import { getCourts } from '@/lib/data-client';
+import { FALLBACK_COURTS } from '@/lib/mock-data';
+import type { Court } from '@/lib/types';
 import { Button } from '@/components/Button';
 import { CourtCard } from '@/components/CourtCard';
 import { AITag, Eyebrow } from '@/components/Tags';
@@ -15,7 +18,13 @@ const SPORTS: { emoji: string; label: string }[] = [
 ];
 
 export default function PlayerHomePage() {
-  const featured = COURTS.slice(0, 4);
+  const [courts, setCourts] = useState<Court[]>(FALLBACK_COURTS);
+
+  useEffect(() => {
+    getCourts().then(setCourts).catch(() => setCourts(FALLBACK_COURTS));
+  }, []);
+
+  const featured = courts.slice(0, 4);
   return (
     <div className="flex flex-col gap-10">
       {/* Hero */}

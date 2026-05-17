@@ -2,7 +2,7 @@
 import { useParams } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import { useBookingStore } from '@/lib/booking-store';
-import { SEEDED_BOOKINGS, getCourt } from '@/lib/mock-data';
+import { fallbackCourt } from '@/lib/mock-data';
 import { Eyebrow } from '@/components/Tags';
 import Link from 'next/link';
 import { formatDateFull, formatTimeRange } from '@/lib/format';
@@ -10,9 +10,8 @@ import { formatDateFull, formatTimeRange } from '@/lib/format';
 export default function CheckinPage() {
   const params = useParams<{ txnId: string }>();
   const storeBookings = useBookingStore((s) => s.bookings);
-  const all = [...storeBookings, ...SEEDED_BOOKINGS];
-  const booking = all.find((b) => b.txn_id === params.txnId);
-  const court = booking ? getCourt(booking.court_id) : undefined;
+  const booking = storeBookings.find((b) => b.txn_id === params.txnId);
+  const court = booking ? fallbackCourt(booking.court_id) : undefined;
 
   if (!booking) {
     return (
