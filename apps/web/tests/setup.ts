@@ -1,3 +1,5 @@
+import '@testing-library/jest-dom/vitest';
+
 // Mock window.matchMedia for jsdom (not implemented in jsdom)
 if (typeof window !== 'undefined' && !window.matchMedia) {
   Object.defineProperty(window, 'matchMedia', {
