@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/Button';
 import { Eyebrow, AITag } from '@/components/Tags';
+import { aiCourtDescription } from '@/lib/api-client';
 import { COURTS } from '@/lib/mock-data';
 import type { Court } from '@/lib/types';
 
@@ -20,6 +21,7 @@ export function CourtForm({ mode, courtId }: { mode: 'new' | 'edit'; courtId?: s
   const [amenities, setAmenities] = useState<string[]>(
     existing ? existing.amenities.map((a) => a.label) : [],
   );
+  const [descLoading, setDescLoading] = useState(false);
 
   function toggleAmenity(a: string) {
     setAmenities((s) => (s.includes(a) ? s.filter((x) => x !== a) : [...s, a]));
@@ -69,8 +71,19 @@ export function CourtForm({ mode, courtId }: { mode: 'new' | 'edit'; courtId?: s
             <textarea className="field-input" rows={4} value={description} onChange={(e) => setDescription(e.target.value)}
                       placeholder="Write a description so users discover & connect with your court..." />
             <Button variant="primary" className="mt-2" type="button"
-                    onClick={() => setDescription('A premium climate-controlled venue with elite-grade equipment, located in the heart of Bangkok. Open daily 06:00–23:00.')}>
-              <AITag>AI</AITag> Generate Description
+                    disabled={descLoading}
+                    onClick={async () => {
+                      setDescLoading(true);
+                      try {
+                        const res = await aiCourtDescription({ name, sport, surface, location, amenities });
+                        setDescription(res.description);
+                      } catch {
+                        setDescription('Unable to generate description. Is the API running?');
+                      } finally {
+                        setDescLoading(false);
+                      }
+                    }}>
+              <AITag>AI</AITag> {descLoading ? 'Generating…' : 'Generate Description'}
             </Button>
           </div>
 
