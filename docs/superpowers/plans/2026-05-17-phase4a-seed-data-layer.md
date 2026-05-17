@@ -2760,7 +2760,7 @@ In-memory state means Cloud Run (Phase 4c) must run with `--min-instances=1 --ma
 | Suite | Result |
 |---|---|
 | Streamlit `pytest tests/` | 29 / 29 ✅ |
-| FastAPI `pytest apps/api` | 52 / 52 ✅ (+20 over Phase 3c) |
+| FastAPI `pytest apps/api` | 53 / 53 ✅ (+21 over Phase 3c) |
 | Vitest | 31 / 31 ✅ |
 | Playwright | 3 / 3 ✅ |
 | `pnpm build` | clean ✅ |
