@@ -29,15 +29,9 @@ export function CourtForm({ mode, courtId }: { mode: 'new' | 'edit'; courtId?: s
 
   return (
     <div>
-      <Link href="/owner/venues" className="text-sm text-zpots-moss">← Back to courts</Link>
-      <h1 className="font-display text-3xl font-bold mt-3">
-        {mode === 'new' ? 'Add New Court' : `Edit ${existing?.name ?? 'Court'}`}
-      </h1>
-      <p className="text-sm text-zpots-muted">
-        Configure high-performance court settings. Changes reflect across all booking channels instantly via Sync. <em>(In Phase 3a, nothing is saved — Phase 4 wires the real backend.)</em>
-      </p>
+      <Link href="/owner/venues" className="text-label-sm text-lime-deep hover:underline">← Back to courts</Link>
 
-      <div className="zpots-card p-6 mt-5 grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="bg-white rounded-kp-card shadow-float p-6 mt-5 grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div>
           <Eyebrow>COURT FUNDAMENTALS</Eyebrow>
 
@@ -91,7 +85,7 @@ export function CourtForm({ mode, courtId }: { mode: 'new' | 'edit'; courtId?: s
             <Eyebrow>KINETIC AMENITIES</Eyebrow>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
               {AMENITY_OPTIONS.map((a) => (
-                <label key={a} className="flex items-center gap-2 text-sm">
+                <label key={a} className="flex items-center gap-2 text-body-sm text-ink-900 font-geist">
                   <input type="checkbox" checked={amenities.includes(a)} onChange={() => toggleAmenity(a)} />
                   {a}
                 </label>
@@ -102,14 +96,14 @@ export function CourtForm({ mode, courtId }: { mode: 'new' | 'edit'; courtId?: s
 
         <div>
           <Eyebrow>VISUAL & BRANDING</Eyebrow>
-          <div className="zpots-card-surface mt-3 h-48 flex items-center justify-center text-zpots-muted text-sm">
+          <div className="bg-surface-low rounded-kp-card mt-3 h-48 flex items-center justify-center text-ink-700/60 text-body-sm font-geist">
             Drag and drop file here<br />Limit 200MB · JPG, PNG, MP4
           </div>
           <Button variant="secondary" className="mt-3 w-full justify-center" type="button">Browse files</Button>
 
           <div className="mt-6">
             <Eyebrow>MICROLOCATION</Eyebrow>
-            <div className="zpots-card-surface h-40 mt-2 flex items-center justify-center text-zpots-muted text-sm">
+            <div className="bg-surface-low rounded-kp-card h-40 mt-2 flex items-center justify-center text-ink-700/60 text-body-sm font-geist">
               (Map placeholder — real map lands in Phase 4)
             </div>
           </div>
