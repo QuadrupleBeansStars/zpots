@@ -1,6 +1,11 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { RevenueBanner } from '@/components/owner/RevenueBanner';
+
+import { PageHero } from '@/components/primitives/PageHero';
+import { NumberFlip } from '@/components/primitives/NumberFlip';
+import { KpiPill } from '@/components/primitives/KpiPill';
+import { RevealOnScroll } from '@/components/primitives/RevealOnScroll';
+import { TabStrip } from '@/components/primitives/TabStrip';
 import { StatusBadge, Eyebrow } from '@/components/Tags';
 import { OWNER_BOOKINGS } from '@/lib/owner-mock-data';
 import { mlNoshowRiskBatch } from '@/lib/api-client';
@@ -25,8 +30,15 @@ function parseHour(time: string): number {
   return m ? parseInt(m[1], 10) : 18;
 }
 
+const TODAY_LABEL = new Date().toLocaleDateString('en-US', {
+  weekday: 'short',
+  month: 'short',
+  day: 'numeric',
+}).toUpperCase();
+
 export default function BookingDashboardPage() {
   const [risks, setRisks] = useState<NoShowRiskResult[] | null>(null);
+  const [range, setRange] = useState('today');
 
   useEffect(() => {
     mlNoshowRiskBatch({
@@ -42,30 +54,49 @@ export default function BookingDashboardPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="font-display text-3xl font-bold">Bookings</h1>
+      <PageHero
+        eyebrow={`TODAY · ${TODAY_LABEL}`}
+        headline={
+          <>
+            <span className="text-lime">฿</span>
+            <NumberFlip value={4280} />
+          </>
+        }
+        sub="+15.6% from yesterday · 12 upcoming sessions"
+        cta={
+          <div className="flex flex-wrap gap-2">
+            <KpiPill label="MAIN ARENA" value="฿1,240" />
+            <KpiPill label="PADEL POD 2" value="฿890" />
+            <KpiPill label="INDOOR TURF" value="฿2,150" />
+          </div>
+        }
+      />
 
-      <RevenueBanner
-        total={4280}
-        delta="+15.6% from yesterday · Upcoming"
-        breakdown={[
-          { label: 'MAIN ARENA',  amount: 1240 },
-          { label: 'PADEL POD 2', amount:  890 },
-          { label: 'INDOOR TURF', amount: 2150, highlight: true },
+      <TabStrip
+        active={range}
+        onChange={setRange}
+        tabs={[
+          { key: 'today', label: 'Today' },
+          { key: 'week',  label: 'This Week' },
+          { key: 'cal',   label: 'Calendar' },
         ]}
       />
 
-      <div className="flex gap-2">
-        <button className="chip chip-selected">Today</button>
-        <button className="chip chip-default">This Week</button>
-        <button className="chip chip-default">Calendar</button>
-      </div>
-
       <div className="grid grid-cols-2 gap-3">
-        <select className="field-input"><option>All Venues</option><option>Main Arena</option><option>Padel Pod 2</option><option>Indoor Turf</option></select>
-        <select className="field-input"><option>Time Descending</option><option>Time Ascending</option><option>Status</option></select>
+        <select className="field-input">
+          <option>All Venues</option>
+          <option>Main Arena</option>
+          <option>Padel Pod 2</option>
+          <option>Indoor Turf</option>
+        </select>
+        <select className="field-input">
+          <option>Time Descending</option>
+          <option>Time Ascending</option>
+          <option>Status</option>
+        </select>
       </div>
 
-      <div className="grid grid-cols-[2fr_2fr_1fr_1fr] gap-3 px-4 py-3">
+      <div className="grid grid-cols-[2fr_2fr_1fr_1fr] gap-3 px-4">
         <Eyebrow>Customer</Eyebrow>
         <Eyebrow>Session info</Eyebrow>
         <Eyebrow>Status</Eyebrow>
@@ -76,32 +107,41 @@ export default function BookingDashboardPage() {
         {OWNER_BOOKINGS.map((b, i) => {
           const risk = risks?.[i];
           return (
-            <div key={b.member_id} className="zpots-card grid grid-cols-[2fr_2fr_1fr_1fr] gap-3 items-center p-3">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full text-white flex items-center justify-center font-semibold" style={{ background: b.avatar_color }}>{b.customer[0]}</div>
-                <div>
-                  <div className="font-semibold text-sm">{b.customer}</div>
-                  <div className="text-xs text-zpots-muted">Member ID: {b.member_id}</div>
+            <RevealOnScroll key={b.member_id} delay={i * 40}>
+              <div className="bg-white rounded-kp-card shadow-float grid grid-cols-[2fr_2fr_1fr_1fr] gap-3 items-center p-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div
+                    className="w-9 h-9 rounded-kp-pill text-white flex items-center justify-center font-geist font-semibold flex-shrink-0"
+                    style={{ background: b.avatar_color }}
+                  >
+                    {b.customer[0]}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-geist font-semibold text-body-md text-ink-900 truncate">{b.customer}</div>
+                    <div className="text-label-sm text-ink-700/60">ID: {b.member_id}</div>
+                  </div>
                 </div>
+                <div className="min-w-0">
+                  <div className="text-body-md text-ink-900 truncate">🏟 {b.court} • {b.sport}</div>
+                  <div className="text-body-sm text-ink-700/60">🕐 {b.time}</div>
+                </div>
+                <StatusBadge status={STATUS_TO_VARIANT[b.status] ?? 'confirmed'}>{b.status}</StatusBadge>
+                {risk ? (
+                  <StatusBadge status={TIER_TO_VARIANT[risk.tier]}>
+                    {risk.tier} ({(risk.probability * 100).toFixed(0)}%)
+                  </StatusBadge>
+                ) : (
+                  <span className="text-body-sm text-ink-700/60">—</span>
+                )}
               </div>
-              <div>
-                <div className="text-sm">🏟 {b.court} • {b.sport}</div>
-                <div className="text-xs text-zpots-muted">🕐 {b.time}</div>
-              </div>
-              <StatusBadge status={STATUS_TO_VARIANT[b.status] ?? 'confirmed'}>{b.status}</StatusBadge>
-              {risk ? (
-                <StatusBadge status={TIER_TO_VARIANT[risk.tier]}>
-                  {risk.tier} ({(risk.probability * 100).toFixed(0)}%)
-                </StatusBadge>
-              ) : (
-                <span className="text-xs text-zpots-muted">—</span>
-              )}
-            </div>
+            </RevealOnScroll>
           );
         })}
       </div>
 
-      <div className="text-xs text-zpots-muted">SHOWING {OWNER_BOOKINGS.length} BOOKINGS · seeded demo data</div>
+      <div className="text-label-sm text-ink-700/60 text-center">
+        SHOWING {OWNER_BOOKINGS.length} BOOKINGS · seeded demo data
+      </div>
     </div>
   );
 }
