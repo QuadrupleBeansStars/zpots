@@ -10,8 +10,11 @@ import os
 from dotenv import load_dotenv
 from openai import AzureOpenAI, OpenAI
 
+# client.py lives at apps/api/ai/client.py — 4 dirnames to reach the repo root.
 _ENV_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    ),
     "dev.env",
 )
 load_dotenv(_ENV_PATH)
