@@ -103,3 +103,20 @@ def chat_completion(
         max_tokens=max_tokens,
     )
     return (response.choices[0].message.content or "").strip()
+
+
+def chat(messages: list[dict], tools: list[dict], system: str):
+    """Single tool-calling turn. Returns the raw OpenAI ChatCompletion object.
+
+    `messages` is the running conversation (user/assistant/tool turns). `system`
+    is prepended as the first system message. `tools` is OpenAI tool schema
+    (`[{"type": "function", "function": {...}}, ...]`).
+    """
+    full = [{"role": "system", "content": system}] + list(messages)
+    return _get_client().chat.completions.create(
+        model=_model(),
+        messages=full,
+        # OpenAI rejects tools=[]; pass None when there are no tools.
+        tools=tools or None,
+        max_tokens=MAX_TOKENS,
+    )
