@@ -1,16 +1,15 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import Markdown from 'react-markdown';
 import { Button } from '@/components/Button';
 import { AITag, Eyebrow, StatusBadge } from '@/components/Tags';
 import { DemandHeatmap } from '@/components/owner/DemandHeatmap';
-import { DEMAND_FORECAST, DISTRICT_DEMAND, PEAK_UTILIZATION_BARS } from '@/lib/owner-mock-data';
-
-const MOCK_SUMMARY =
-  'Your Friday evening slots (18:00–21:00) continue to dominate revenue, ' +
-  'driving 41% of weekly bookings. Sukhumvit demand is saturated — consider ' +
-  'opening Court 4 for tournament-rate pricing. Thong Lor traffic predicted ' +
-  'to intensify Saturday after 16:00 due to weather; auto-rescheduling ' +
-  'recommended for 12% of bookings.';
+import {
+  DEMAND_FORECAST, DISTRICT_DEMAND, PEAK_UTILIZATION_BARS,
+  WEEKLY_UTILIZATION, OWNER_BOOKINGS,
+} from '@/lib/owner-mock-data';
+import { aiInsights, mlDemandForecast } from '@/lib/api-client';
+import type { DemandCell } from '@/lib/owner-mock-data';
 
 const LEVEL_TO_STATUS: Record<string, 'confirmed' | 'progress' | 'cancelled'> = {
   Peak: 'confirmed', Moderate: 'progress', Saturated: 'cancelled',
@@ -18,6 +17,43 @@ const LEVEL_TO_STATUS: Record<string, 'confirmed' | 'progress' | 'cancelled'> = 
 
 export default function InsightsPage() {
   const [summary, setSummary] = useState('');
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [heatmap, setHeatmap] = useState<DemandCell[]>(DEMAND_FORECAST);
+  const [heatmapFromApi, setHeatmapFromApi] = useState(false);
+
+  useEffect(() => {
+    mlDemandForecast()
+      .then((res) => {
+        if (res.cells.length > 0) {
+          setHeatmap(res.cells);
+          setHeatmapFromApi(true);
+        }
+      })
+      .catch(() => { /* keep mock fallback */ });
+  }, []);
+
+  async function generate() {
+    setSummaryLoading(true);
+    setSummaryError(null);
+    try {
+      const weekly_utilization = Object.fromEntries(
+        WEEKLY_UTILIZATION.map((w) => [w.day, w.pct]),
+      );
+      const res = await aiInsights({
+        weekly_utilization,
+        district_demand: DISTRICT_DEMAND,
+        owner_bookings: OWNER_BOOKINGS.map((b) => ({
+          customer: b.customer, sport: b.sport, status: b.status,
+        })),
+      });
+      setSummary(res.markdown);
+    } catch (e) {
+      setSummaryError('Could not generate summary. Is the API running?');
+    } finally {
+      setSummaryLoading(false);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-5">
@@ -27,26 +63,34 @@ export default function InsightsPage() {
           <AITag>ELITE VENUE PARTNER</AITag>
         </div>
         <div className="flex gap-2">
-          <Button variant="primary" icon="smart_toy" onClick={() => setSummary(MOCK_SUMMARY)}>
-            Generate AI Summary
+          <Button variant="primary" icon="smart_toy" onClick={generate} disabled={summaryLoading}>
+            {summaryLoading ? 'Generating…' : 'Generate AI Summary'}
           </Button>
-          <Button variant="secondary" onClick={() => setSummary('')}>Regenerate</Button>
+          <Button variant="secondary" onClick={() => setSummary('')}>Clear</Button>
         </div>
       </div>
+
+      {summaryError && (
+        <div className="zpots-card p-3 text-sm text-red-700">{summaryError}</div>
+      )}
 
       {summary && (
         <div className="zpots-card-surface p-4">
           <AITag>AI GENERATED SUMMARY</AITag>
-          <p className="mt-2 text-sm leading-relaxed">{summary}</p>
+          <div className="mt-2 text-sm leading-relaxed prose prose-sm max-w-none">
+            <Markdown>{summary}</Markdown>
+          </div>
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <div className="zpots-card p-5">
           <h3 className="font-semibold">Bangkok Demand Heatmap</h3>
-          <Eyebrow>7-DAY FORECAST · MODEL: RANDOM FOREST</Eyebrow>
+          <Eyebrow>
+            {heatmapFromApi ? '7-DAY FORECAST · LIVE FROM MODEL' : '7-DAY FORECAST · CACHED'}
+          </Eyebrow>
           <div className="mt-3">
-            <DemandHeatmap data={DEMAND_FORECAST} />
+            <DemandHeatmap data={heatmap} />
           </div>
         </div>
         <div className="zpots-card p-5">

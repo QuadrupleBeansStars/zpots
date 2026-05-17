@@ -2,6 +2,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, Suspense } from 'react';
 import { COURTS } from '@/lib/mock-data';
+import { aiParseSearch } from '@/lib/api-client';
 import { CourtCard } from '@/components/CourtCard';
 import { Button } from '@/components/Button';
 import { Eyebrow } from '@/components/Tags';
@@ -17,6 +18,7 @@ function SearchPageInner() {
   const maxPriceStr = params.get('max_price') ?? '';
   const maxPrice = maxPriceStr ? parseInt(maxPriceStr, 10) : null;
   const [query, setQuery] = useState(params.get('q') ?? '');
+  const [searchLoading, setSearchLoading] = useState(false);
 
   const filtered = COURTS.filter((c) => {
     if (sport !== 'All' && c.sport !== sport) return false;
@@ -46,7 +48,22 @@ function SearchPageInner() {
             placeholder='e.g. "badminton near Sukhumvit Friday evening under 400 baht"'
           />
         </div>
-        <Button variant="primary" onClick={() => { /* AI parse: Phase 3 */ }}>Search</Button>
+        <Button variant="primary" disabled={searchLoading} onClick={async () => {
+          if (!query.trim()) return;
+          setSearchLoading(true);
+          try {
+            const parsed = await aiParseSearch({ query });
+            const next = new URLSearchParams(params.toString());
+            if (parsed.sport) next.set('sport', parsed.sport); else next.delete('sport');
+            if (parsed.district) next.set('district', parsed.district); else next.delete('district');
+            if (parsed.max_price !== null) next.set('max_price', String(parsed.max_price)); else next.delete('max_price');
+            router.push(`/player/search?${next.toString()}`);
+          } catch {
+            // silent — user can still type and filter manually
+          } finally {
+            setSearchLoading(false);
+          }
+        }}>{searchLoading ? 'Parsing…' : 'Search'}</Button>
       </div>
 
       <div className="flex gap-2 mt-4 items-center flex-wrap">
