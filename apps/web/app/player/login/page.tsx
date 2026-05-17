@@ -1,7 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Button } from '@/components/Button';
+import { SplitHero } from '@/components/primitives/SplitHero';
 
 export default function PlayerLoginPage() {
   const router = useRouter();
@@ -10,51 +10,36 @@ export default function PlayerLoginPage() {
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (email.trim() && password.trim()) {
-      router.push('/player');
-    }
+    if (email.trim() && password.trim()) router.push('/player');
   }
 
   return (
-    <div className="max-w-md mx-auto mt-12">
-      <div className="zpots-card p-10">
-        <h1 className="font-display text-3xl font-bold text-zpots-ink">
-          Welcome Back,<br />Athlete
-        </h1>
-        <p className="text-sm text-zpots-muted mt-2">
-          Log in or create an account to book your next game.
+    <SplitHero
+      eyebrow="ATHLETE LOGIN"
+      headline={<>Welcome back,<br />Athlete.</>}
+      sub="Your next session is one click away."
+    >
+      <form onSubmit={onSubmit} className="flex flex-col gap-4">
+        <div>
+          <label className="text-label-sm text-ink-700/60 block mb-2">EMAIL</label>
+          <input type="email" className="field-input" value={email}
+            onChange={(e) => setEmail(e.target.value)} placeholder="athlete@zpots.ai" />
+        </div>
+        <div>
+          <label className="text-label-sm text-ink-700/60 block mb-2">PASSWORD</label>
+          <input type="password" className="field-input" value={password}
+            onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+        </div>
+        <button
+          type="submit"
+          className="w-full px-5 py-3 bg-lime text-ink-900 font-geist font-semibold text-body-sm rounded-kp-pill hover:scale-[1.02] active:bg-lime-press transition-transform duration-quick ease-precision focus-ring mt-2"
+        >
+          LOG IN
+        </button>
+        <p className="text-body-sm text-ink-700/60 text-center mt-2">
+          Demo: <code className="font-geist-mono text-ink-900">player@zpots.ai</code> / <code className="font-geist-mono text-ink-900">demo123</code>
         </p>
-
-        <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-4">
-          <div>
-            <label className="field-label">EMAIL</label>
-            <input
-              type="email"
-              className="field-input"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="athlete@zpots.ai"
-            />
-          </div>
-          <div>
-            <label className="field-label">PASSWORD</label>
-            <input
-              type="password"
-              className="field-input"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-            />
-          </div>
-          <Button variant="primary" type="submit" className="w-full justify-center mt-2">
-            LOG IN
-          </Button>
-        </form>
-
-        <p className="text-xs text-zpots-muted text-center mt-4">
-          Demo: <code>player@zpots.ai</code> / <code>demo123</code>
-        </p>
-      </div>
-    </div>
+      </form>
+    </SplitHero>
   );
 }

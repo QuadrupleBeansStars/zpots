@@ -5,8 +5,8 @@ import { useParams } from 'next/navigation';
 import { useBookingStore } from '@/lib/booking-store';
 import { StarRating } from '@/components/player/StarRating';
 import { FeedbackTagPicker } from '@/components/player/FeedbackTagPicker';
-import { Button } from '@/components/Button';
-import { Eyebrow } from '@/components/Tags';
+import { PageHero } from '@/components/primitives/PageHero';
+import { RevealOnScroll } from '@/components/primitives/RevealOnScroll';
 
 export default function FeedbackPage() {
   const params = useParams<{ txnId: string }>();
@@ -21,8 +21,10 @@ export default function FeedbackPage() {
   if (!booking) {
     return (
       <div className="text-center py-10">
-        <h1 className="font-display text-xl">Booking not found</h1>
-        <Link href="/player/bookings" className="text-zpots-moss text-sm mt-2 inline-block">← My bookings</Link>
+        <h1 className="font-geist font-bold text-title-lg text-ink-900">Booking not found</h1>
+        <Link href="/player/bookings" className="text-body-sm text-ink-700 underline-offset-4 hover:underline mt-2 inline-block">
+          ← My bookings
+        </Link>
       </div>
     );
   }
@@ -34,41 +36,56 @@ export default function FeedbackPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto">
-      <Link href="/player/bookings" className="text-sm text-zpots-moss">← My bookings</Link>
-      <h1 className="font-display text-3xl font-bold mt-3">Rate your session</h1>
-      <p className="text-sm text-zpots-muted">{booking.court_name} • {booking.date} {booking.time_start}</p>
+    <div className="flex flex-col gap-6 max-w-xl mx-auto">
+      <PageHero
+        eyebrow={`LEAVE FEEDBACK · ${booking.court_name}`}
+        headline="How was your game?"
+        sub={`${booking.court_name} · ${booking.date} ${booking.time_start}`}
+      />
 
       {submitted ? (
-        <div className="zpots-card-lime p-6 mt-6 text-center">
-          <div className="text-3xl">🙌</div>
-          <h2 className="font-display font-bold text-lg mt-2">Thanks for your feedback!</h2>
-          <Link href="/player/bookings" className="text-sm text-zpots-forest font-semibold mt-3 inline-block">Back to bookings</Link>
-        </div>
+        <RevealOnScroll>
+          <div className="bg-lime rounded-kp-card p-8 text-center">
+            <div className="text-4xl">🙌</div>
+            <h2 className="font-geist font-bold text-title-md text-ink-900 mt-3">Thanks for your feedback!</h2>
+            <Link href="/player/bookings" className="text-body-sm text-ink-900 font-geist font-semibold mt-4 inline-block underline-offset-4 hover:underline">
+              Back to bookings
+            </Link>
+          </div>
+        </RevealOnScroll>
       ) : (
-        <form onSubmit={submit} className="space-y-5 mt-5">
-          <div>
-            <Eyebrow>OVERALL RATING</Eyebrow>
-            <div className="mt-2"><StarRating value={rating} onChange={setRating} /></div>
-          </div>
-          <div>
-            <Eyebrow>WHAT WORKED</Eyebrow>
-            <div className="mt-2"><FeedbackTagPicker selected={tags} onToggle={(t) => setTags((s) => s.includes(t) ? s.filter((x) => x !== t) : [...s, t])} /></div>
-          </div>
-          <div>
-            <label className="field-label">YOUR THOUGHTS</label>
-            <textarea
-              className="field-input"
-              rows={4}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Tell us more about your experience…"
-            />
-          </div>
-          <Button variant="primary" type="submit" className="w-full justify-center" disabled={rating === 0}>
-            Submit feedback
-          </Button>
-        </form>
+        <RevealOnScroll>
+          <form onSubmit={submit} className="bg-white rounded-kp-card shadow-float p-6 space-y-5">
+            <div>
+              <div className="text-label-sm text-ink-700/60 mb-2">OVERALL RATING</div>
+              <StarRating value={rating} onChange={setRating} />
+            </div>
+            <div>
+              <div className="text-label-sm text-ink-700/60 mb-2">WHAT WORKED</div>
+              <FeedbackTagPicker
+                selected={tags}
+                onToggle={(t) => setTags((s) => s.includes(t) ? s.filter((x) => x !== t) : [...s, t])}
+              />
+            </div>
+            <div>
+              <label className="text-label-sm text-ink-700/60 block mb-2">YOUR THOUGHTS</label>
+              <textarea
+                className="field-input"
+                rows={4}
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Tell us more about your experience…"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={rating === 0}
+              className="w-full px-5 py-3 bg-lime text-ink-900 font-geist font-semibold text-body-sm rounded-kp-pill hover:scale-[1.02] active:bg-lime-press transition-transform duration-quick ease-precision focus-ring disabled:opacity-50 disabled:scale-100"
+            >
+              Submit feedback
+            </button>
+          </form>
+        </RevealOnScroll>
       )}
     </div>
   );

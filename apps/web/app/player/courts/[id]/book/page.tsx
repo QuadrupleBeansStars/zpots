@@ -1,12 +1,13 @@
 'use client';
 import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
+import Link from 'next/link';
 import { getCourt } from '@/lib/data-client';
 import { fallbackCourt } from '@/lib/mock-data';
 import type { Court } from '@/lib/types';
 import { useBookingStore, generateTxnId } from '@/lib/booking-store';
-import { Button } from '@/components/Button';
-import { AITag, Eyebrow } from '@/components/Tags';
+import { DarkHero } from '@/components/primitives/DarkHero';
+import { PulseAccent } from '@/components/primitives/PulseAccent';
 import { formatPrice, formatDateShort } from '@/lib/format';
 
 function BookingPageInner() {
@@ -31,13 +32,13 @@ function BookingPageInner() {
   const [payMethod, setPayMethod] = useState<'card' | 'promptpay' | 'apple'>('card');
 
   if (courtLoading) {
-    return <div className="text-zpots-muted text-sm py-10 text-center">Loading…</div>;
+    return <div className="text-ink-700/60 text-body-sm py-10 text-center">Loading…</div>;
   }
 
   if (!court || !date || !timeStart) {
     return (
-      <div className="text-zpots-muted">
-        Missing booking details. <a href="/player/search" className="text-zpots-moss">Back to search.</a>
+      <div className="text-ink-700/60 text-body-sm">
+        Missing booking details. <Link href="/player/search" className="text-ink-900 underline">Back to search.</Link>
       </div>
     );
   }
@@ -64,71 +65,93 @@ function BookingPageInner() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6 max-w-4xl mx-auto">
-      {/* Left: session details + payment */}
-      <div className="space-y-4">
-        <a href={`/player/courts/${court.id}`} className="text-sm text-zpots-moss">← Back</a>
-        <Eyebrow>SECURE CHECKOUT</Eyebrow>
+    <div className="flex flex-col gap-6 max-w-4xl mx-auto">
+      <Link href={`/player/courts/${court.id}`} className="text-body-sm text-ink-700 hover:text-ink-900 underline-offset-4 hover:underline">
+        ← Back
+      </Link>
 
-        <div
-          className="rounded-card p-5 text-white"
-          style={{ background: `linear-gradient(135deg, ${court.color}, ${court.color}cc)` }}
-        >
-          <h2 className="font-display text-2xl font-bold">{court.name}</h2>
-          <p className="text-sm opacity-90">📍 {court.district}</p>
+      <DarkHero glow="lime" className="p-8">
+        <div className="text-label-sm text-lime/70 mb-2">SECURE CHECKOUT</div>
+        <h1 className="font-geist font-bold text-display-md text-white leading-none tracking-tight">
+          {court.name}
+        </h1>
+        <p className="mt-2 text-body-md text-white/60">📍 {court.district}</p>
+        <div className="mt-3 flex gap-3 flex-wrap text-body-sm text-white/70">
+          <span>🕐 {timeStart} – {timeEnd}</span>
+          <span>·</span>
+          <span>{formatDateShort(date)}</span>
+          <span>·</span>
+          <span>{duration} hr{duration > 1 ? 's' : ''}</span>
         </div>
+      </DarkHero>
 
-        <div className="zpots-card-surface p-4">
-          <Eyebrow>SELECTED SESSION</Eyebrow>
-          <div className="font-semibold mt-1">{court.name} | {formatDateShort(date)}</div>
-          <div className="text-sm text-zpots-muted">🕐 {timeStart} – {timeEnd} • {duration * 60} Minutes ({duration} hr{duration > 1 ? 's' : ''})</div>
-        </div>
-
-        <div>
-          <div className="font-semibold mb-2">Payment Method</div>
-          <label className="flex items-center gap-2 mb-1">
-            <input type="radio" checked={payMethod === 'card'} onChange={() => setPayMethod('card')} />
-            💳 Credit/Debit — Visa, Mastercard, JCB
-          </label>
-          <label className="flex items-center gap-2 mb-1">
-            <input type="radio" checked={payMethod === 'promptpay'} onChange={() => setPayMethod('promptpay')} />
-            🏧 PromptPay — Local Thai Transfer
-          </label>
-          <label className="flex items-center gap-2">
-            <input type="radio" checked={payMethod === 'apple'} onChange={() => setPayMethod('apple')} />
-            🍎 Apple Pay — Express Checkout
-          </label>
-        </div>
-      </div>
-
-      {/* Right: summary + confirm */}
-      <aside className="zpots-card p-5 h-fit">
-        <h3 className="font-display font-bold mb-3">Summary</h3>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between"><span>Base price ({duration} hr{duration > 1 ? 's' : ''})</span><span>{formatPrice(basePrice)}</span></div>
-          <div className="flex justify-between text-zpots-moss">
-            <span className="flex items-center gap-1"><AITag>AI APPLIED</AITag> Dynamic Discount</span>
-            <span>-{formatPrice(discount)}</span>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6">
+        <div className="space-y-4">
+          <div className="bg-white rounded-kp-card shadow-float p-5">
+            <div className="text-label-sm text-ink-700/60 mb-3">PAYMENT METHOD</div>
+            <div className="space-y-3">
+              {[
+                { id: 'card' as const, label: '💳 Credit/Debit — Visa, Mastercard, JCB' },
+                { id: 'promptpay' as const, label: '🏧 PromptPay — Local Thai Transfer' },
+                { id: 'apple' as const, label: '🍎 Apple Pay — Express Checkout' },
+              ].map((m) => (
+                <label key={m.id} className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="payMethod"
+                    checked={payMethod === m.id}
+                    onChange={() => setPayMethod(m.id)}
+                    className="accent-lime"
+                  />
+                  <span className="text-body-sm text-ink-900">{m.label}</span>
+                </label>
+              ))}
+            </div>
           </div>
-          <div className="flex justify-between"><span>Service Fee</span><span>{formatPrice(serviceFee)}</span></div>
         </div>
 
-        <div className="border-t border-zpots-mint mt-4 pt-3">
-          <Eyebrow>TOTAL AMOUNT</Eyebrow>
-          <div className="font-display text-3xl font-bold mt-1">{formatPrice(total)}</div>
-          <div className="text-[11px] text-zpots-muted">includes taxes &amp; fees</div>
-        </div>
+        <aside className="bg-white rounded-kp-card shadow-float p-5 h-fit">
+          <h3 className="font-geist font-bold text-title-md text-ink-900 mb-4">Summary</h3>
+          <div className="space-y-2 text-body-sm">
+            <div className="flex justify-between text-ink-700">
+              <span>Base price ({duration} hr{duration > 1 ? 's' : ''})</span>
+              <span className="font-geist font-semibold text-ink-900">{formatPrice(basePrice)}</span>
+            </div>
+            <div className="flex justify-between text-ink-700">
+              <span className="flex items-center gap-1">
+                <span className="px-2 py-0.5 bg-lime text-ink-900 text-label-sm font-geist font-semibold rounded-kp-pill">AI</span>
+                Dynamic Discount
+              </span>
+              <span className="font-geist font-semibold text-lime-deep">-{formatPrice(discount)}</span>
+            </div>
+            <div className="flex justify-between text-ink-700">
+              <span>Service Fee</span>
+              <span className="font-geist font-semibold text-ink-900">{formatPrice(serviceFee)}</span>
+            </div>
+          </div>
 
-        <Button variant="primary" onClick={confirm} className="w-full justify-center mt-4">
-          Confirm &amp; Pay →
-        </Button>
-        <div className="text-[11px] text-zpots-muted text-center mt-2">🔒 BANK-GRADE ENCRYPTED</div>
+          <div className="border-t border-surface-med mt-4 pt-4">
+            <div className="text-label-sm text-ink-700/60">TOTAL AMOUNT</div>
+            <div className="font-geist font-bold text-display-md text-ink-900 mt-1">{formatPrice(total)}</div>
+            <div className="text-body-sm text-ink-700/60 mt-0.5">includes taxes & fees</div>
+          </div>
 
-        <div className="zpots-card-surface mt-4 p-3">
-          <AITag>ZPOTS AI SUGGESTION</AITag>
-          <p className="text-xs mt-2 italic text-zpots-muted">"This time slot is typically quieter. You'll likely have more space for warm-ups on Court 01."</p>
-        </div>
-      </aside>
+          <PulseAccent>
+            <button
+              onClick={confirm}
+              className="w-full px-5 py-3.5 bg-lime text-ink-900 font-geist font-bold text-body-sm rounded-kp-pill hover:scale-[1.02] active:bg-lime-press transition-transform duration-quick ease-precision focus-ring mt-4"
+            >
+              Confirm & Pay →
+            </button>
+          </PulseAccent>
+          <div className="text-body-sm text-ink-700/60 text-center mt-2">🔒 BANK-GRADE ENCRYPTED</div>
+
+          <div className="bg-surface-low rounded-kp-card p-3 mt-4">
+            <span className="px-2 py-0.5 bg-lime text-ink-900 text-label-sm font-geist font-semibold rounded-kp-pill">AI TIP</span>
+            <p className="text-body-sm text-ink-700/70 mt-2 italic">"This time slot is typically quieter. You'll likely have more space for warm-ups on Court 01."</p>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }

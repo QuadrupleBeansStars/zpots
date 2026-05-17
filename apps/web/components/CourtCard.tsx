@@ -1,49 +1,49 @@
 import React from 'react';
-import { AITag } from './Tags';
-import { Button } from './Button';
 import type { Court } from '@/types';
 
 const SPORT_ICON: Record<string, string> = {
-  Badminton: '🏸', Football: '⚽', Basketball: '🏀', Padel: '🎾', Tennis: '🎾',
+  Badminton: '🏸', Football: '⚽', Basketball: '🏀', Padel: '🎾', Tennis: '🎾', Volleyball: '🏐',
 };
 
 export function CourtCard({ court, onBook }: { court: Court; onBook?: (c: Court) => void }) {
   return (
-    <div className="zpots-card" style={{ padding: 0, overflow: 'hidden' }}>
+    <div className="bg-white rounded-kp-card shadow-float overflow-hidden">
       <div
+        className="relative flex items-center justify-center"
         style={{
           height: 150,
           background: `linear-gradient(135deg, ${court.color}, ${court.color}cc)`,
-          position: 'relative',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
         }}
       >
         <span style={{ fontSize: 44, color: 'rgba(255,255,255,0.9)' }}>{SPORT_ICON[court.sport] ?? '🏸'}</span>
         {court.tags?.length ? (
-          <div style={{ position: 'absolute', top: 12, left: 12 }}>
+          <div className="absolute top-3 left-3 flex flex-wrap gap-1">
             {court.tags.map((t) => (
-              <AITag key={t}>{t}</AITag>
+              <span key={t} className="px-2 py-0.5 bg-lime text-ink-900 text-label-sm font-geist font-semibold rounded-kp-pill">
+                {t}
+              </span>
             ))}
           </div>
         ) : null}
       </div>
-      <div style={{ padding: '14px 16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontWeight: 600, fontSize: 14 }}>{court.name}</span>
-          <span style={{ fontSize: 13, color: '#506300' }}>⭐ {court.rating}</span>
+      <div className="p-4">
+        <div className="flex justify-between items-center">
+          <span className="font-geist font-semibold text-body-md text-ink-900">{court.name}</span>
+          <span className="text-body-sm text-ink-700/70">⭐ {court.rating}</span>
         </div>
-        <div style={{ fontSize: 12, color: '#3d4455', marginTop: 4 }}>📍 {court.location}</div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 14 }}>
+        <div className="text-body-sm text-ink-700/60 mt-1">📍 {court.location}</div>
+        <div className="flex justify-between items-end mt-4">
           <div>
-            <div className="eyebrow" style={{ fontSize: 9 }}>STARTS AT</div>
-            <span className="display" style={{ fontSize: 20 }}>฿{court.price_per_hour}</span>
-            <span style={{ fontSize: 11, color: '#3d4455' }}> /hr</span>
+            <div className="text-label-sm text-ink-700/50">STARTS AT</div>
+            <span className="font-geist font-bold text-title-md text-ink-900">฿{court.price_per_hour}</span>
+            <span className="text-body-sm text-ink-700/60"> /hr</span>
           </div>
-          <Button variant="primary" style={{ padding: '8px 18px', fontSize: 12 }} onClick={() => onBook?.(court)}>
+          <button
+            onClick={() => onBook?.(court)}
+            className="px-4 py-2 bg-lime text-ink-900 font-geist font-semibold text-body-sm rounded-kp-pill hover:scale-[1.02] active:bg-lime-press transition-transform duration-quick ease-precision focus-ring"
+          >
             Book Now
-          </Button>
+          </button>
         </div>
       </div>
     </div>

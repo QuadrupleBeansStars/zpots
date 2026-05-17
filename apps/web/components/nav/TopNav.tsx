@@ -1,6 +1,7 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { MobileMenu } from './MobileMenu';
 
 import { GlassPanel } from '@/components/primitives/GlassPanel';
 import { Icon } from '@/components/Icon';
@@ -36,6 +37,8 @@ export function TopNav({ role }: Props) {
   const user = role === 'player' ? currentUser : currentOwner;
   const ctaHref = role === 'player' ? '/player/search' : '/owner/venues/new';
   const ctaLabel = role === 'player' ? 'Find courts' : '+ Add Court';
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const mobileItems = nav.map((it) => ({ href: it.href, label: it.label }));
 
   return (
     <GlassPanel as="header" className="sticky top-0 z-40 h-16 px-5 md:px-8 flex items-center gap-6 border-b border-surface-med">
@@ -66,16 +69,20 @@ export function TopNav({ role }: Props) {
 
       <UserChip name={user.name} role={role} />
 
-      {/* Mobile menu trigger — full implementation in 5d when player pages
-          actually need it. For 5a a placeholder hamburger is fine; pages
-          render top-nav-less on mobile until then. */}
       <button
         type="button"
+        onClick={() => setMobileOpen(true)}
         className="md:hidden ml-auto p-2 focus-ring rounded-kp-chip"
         aria-label="Open menu"
       >
         <Icon name="menu" style={{ fontSize: 22, color: '#272e42' }} />
       </button>
+      <MobileMenu
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        items={mobileItems}
+        cta={{ href: ctaHref, label: ctaLabel }}
+      />
     </GlassPanel>
   );
 }
