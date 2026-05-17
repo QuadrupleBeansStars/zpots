@@ -5,16 +5,11 @@ from ai.client import chat
 from agents.player import tools as player_tools
 from agents.player.system_prompt import build_system_prompt
 
-MAX_HOPS = 6  # safety cap so the model can't loop forever
+MAX_HOPS = 6
 
 
-def run_turn(
-    messages: list[dict], user: dict, bookings: list[dict],
-) -> dict:
+def run_turn(messages: list[dict], user: dict) -> dict:
     """Run one user turn through the agent.
-
-    `messages` is the full history (user / assistant / tool turns). The caller
-    is responsible for appending the new user message before invoking.
 
     Returns:
         {"text": <final assistant text>, "draft": <pending draft dict or None>,
@@ -54,7 +49,7 @@ def run_turn(
             except json.JSONDecodeError:
                 args = {}
             result = player_tools.dispatch(
-                tc.function.name, args, user_id=user["id"], bookings=bookings,
+                tc.function.name, args, user_id=user["id"],
             )
             if isinstance(result, dict) and result.get("kind") in ("booking_draft", "cancel_draft"):
                 pending_draft = result

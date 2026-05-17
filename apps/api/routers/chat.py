@@ -15,7 +15,6 @@ def chat_player(req: ChatPlayerRequest) -> ChatPlayerResponse:
     result = player_run_turn(
         messages=[m.model_dump(exclude_none=True) for m in req.messages],
         user=req.user.model_dump(),
-        bookings=[b.model_dump() for b in req.bookings],
     )
     return ChatPlayerResponse(
         text=result["text"],

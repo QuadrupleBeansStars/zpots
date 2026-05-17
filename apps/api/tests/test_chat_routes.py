@@ -19,7 +19,6 @@ def test_chat_player_returns_text_and_history(mock_openai_client):
     r = client.post("/chat/player", json={
         "messages": [{"role": "user", "content": "hello"}],
         "user": {"id": 1, "name": "Alex"},
-        "bookings": [],
     })
     assert r.status_code == 200
     body = r.json()
@@ -37,4 +36,4 @@ def test_chat_owner_returns_text_and_history(mock_openai_client):
     assert r.status_code == 200
     body = r.json()
     assert "1,420" in body["text"]
-    assert "draft" not in body  # owner response has no draft field
+    assert "draft" not in body
