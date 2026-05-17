@@ -1,75 +1,18 @@
-"""Owner-agent tools (read-only).
-
-In Phase 3c there is no Postgres yet, so the tools read from a hardcoded
-`_BOOKINGS_FIXTURE` representing the venue's recent activity. Phase 4 swaps
-this for a real query.
-"""
-from datetime import date as _date, timedelta as _td
+"""Owner-agent tools (read-only). Reads from data.store singletons."""
+from datetime import date as _date
 from typing import Any
 
+from data.store import get_bookings_store, get_courts_store
 from ml.inference import predict_noshow_risk
 from ml.inference import get_demand_forecast as _get_demand_df
 
 _LIST_BOOKINGS_MAX = 200
 
 
-# Mirror of the legacy SQLite seed data plus some upcoming bookings so the
-# owner agent has interesting things to rank/summarize. Phase 4 swaps for
-# a Postgres query.
-def _upcoming(days_ahead: int, **overrides) -> dict:
-    d = (_date.today() + _td(days=days_ahead)).isoformat()
-    base = {
-        "txn_id": "ZP-00000", "player_name": "Demo",
-        "court_id": "bbc-01", "court_name": "Bangkok Badminton Center",
-        "date": d, "time_start": "18:00", "time_end": "19:00",
-        "duration": 1, "total_price": 450, "status": "CONFIRMED",
-    }
-    base.update(overrides)
-    return base
-
-
-_BOOKINGS_FIXTURE: list[dict] = [
-    _upcoming(1, txn_id="ZP-90101", player_name="Alex Siriwan",
-              court_id="bbc-01", court_name="Bangkok Badminton Center",
-              time_start="18:00", time_end="20:00", duration=2, total_price=900),
-    _upcoming(2, txn_id="ZP-90102", player_name="Narin Kositchai",
-              court_id="sky-02", court_name="Skyline Arena Football",
-              time_start="20:00", time_end="22:00", duration=2, total_price=2400),
-    _upcoming(3, txn_id="ZP-90103", player_name="Maya Chen",
-              court_id="pdl-04", court_name="Padel House Sukhumvit",
-              time_start="07:00", time_end="08:00", duration=1, total_price=800),
-    _upcoming(4, txn_id="ZP-90104", player_name="Tomás Vega",
-              court_id="dwh-03", court_name="Downtown Hoops",
-              time_start="19:00", time_end="21:00", duration=2, total_price=1200),
-    _upcoming(5, txn_id="ZP-90105", player_name="Priya Singh",
-              court_id="rbs-05", court_name="Royal Bangkok Sports Club",
-              time_start="16:00", time_end="17:00", duration=1, total_price=950),
-    _upcoming(0, txn_id="ZP-90100", player_name="Marcus Lee",
-              court_id="bbc-01", court_name="Bangkok Badminton Center",
-              time_start="20:00", time_end="21:00", duration=1, total_price=450),
-]
-
-
-COURTS: list[dict] = [
-    {"id": "bbc-01", "name": "Bangkok Badminton Center", "sport": "Badminton",
-     "district": "Sukhumvit", "price_per_hour": 450, "utilization": 88},
-    {"id": "sky-02", "name": "Skyline Arena Football", "sport": "Football",
-     "district": "Thong Lor", "price_per_hour": 1200, "utilization": 74},
-    {"id": "dwh-03", "name": "Downtown Hoops", "sport": "Basketball",
-     "district": "Ari", "price_per_hour": 600, "utilization": 68},
-    {"id": "pdl-04", "name": "Padel House Sukhumvit", "sport": "Padel",
-     "district": "Sukhumvit", "price_per_hour": 800, "utilization": 79},
-    {"id": "rbs-05", "name": "Royal Bangkok Sports Club", "sport": "Tennis",
-     "district": "Pathumwan", "price_per_hour": 950, "utilization": 92},
-    {"id": "ivh-06", "name": "Impact Volleyball Hall", "sport": "Volleyball",
-     "district": "Nonthaburi", "price_per_hour": 350, "utilization": 55},
-]
-
-
 def get_revenue(date_from: str, date_to: str) -> dict:
     total = 0
     n = 0
-    for b in _BOOKINGS_FIXTURE:
+    for b in get_bookings_store().all():
         if b["status"] != "CONFIRMED":
             continue
         if date_from <= b["date"] <= date_to:
@@ -87,7 +30,7 @@ def list_bookings(
     limit: int = 50,
 ) -> list[dict]:
     limit = max(1, min(int(limit), _LIST_BOOKINGS_MAX))
-    rows = list(_BOOKINGS_FIXTURE)
+    rows = get_bookings_store().all()
     if date_from:
         rows = [r for r in rows if r["date"] >= date_from]
     if date_to:
@@ -100,12 +43,8 @@ def list_bookings(
     return rows[:limit]
 
 
-def _court_lookup(court_id: str) -> dict:
-    return next((c for c in COURTS if c["id"] == court_id), {})
-
-
 def _hydrate_for_noshow(b: dict) -> dict:
-    court = _court_lookup(b["court_id"])
+    court = get_courts_store().by_id(b["court_id"]) or {}
     d = _date.fromisoformat(b["date"])
     dow = d.weekday()
     hour = int(b["time_start"].split(":")[0])
@@ -168,9 +107,9 @@ def summarize_courts() -> list[dict]:
         {
             "id": c["id"], "name": c["name"], "sport": c["sport"],
             "district": c["district"], "price_per_hour": c["price_per_hour"],
-            "utilization_pct": c.get("utilization"),
+            "utilization_pct": c.get("utilization_pct") or c.get("utilization"),
         }
-        for c in COURTS
+        for c in get_courts_store().all()
     ]
 
 
@@ -242,7 +181,7 @@ TOOLS = [
 
 
 def dispatch(name: str, args: dict, user_id: int) -> Any:
-    """Owner dispatcher. user_id is accepted for parity with the player one but unused."""
+    """Owner dispatcher. user_id accepted for parity with the player one but unused."""
     if name == "get_revenue":
         return get_revenue(**args)
     if name == "list_bookings":
