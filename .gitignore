@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
+
+# Brainstorm session content (visual companion)
+.superpowers/
 .Python
 env/
 venv/
