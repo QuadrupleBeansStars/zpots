@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test('owner can sign in and navigate the sidebar', async ({ page }) => {
   // Landing → Enter as Owner
   await page.goto('/');
-  await page.getByRole('button', { name: /Enter as Owner/i }).click();
+  await page.getByRole('link', { name: /Enter as Owner/i }).click();
   await expect(page).toHaveURL(/\/owner-login$/);
 
   // Submit login (prefilled creds)
