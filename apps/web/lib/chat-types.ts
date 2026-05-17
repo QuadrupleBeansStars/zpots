@@ -17,18 +17,6 @@ export type ChatMessage = {
 
 export type ChatUser = { id: number; name: string };
 
-export type BookingSnapshot = {
-  txn_id: string;
-  court_id: string;
-  court_name: string;
-  date: string;
-  time_start: string;
-  time_end: string;
-  duration: number;
-  total_price: number;
-  status: 'CONFIRMED' | 'CANCELLED';
-};
-
 export type BookingDraft = {
   kind: 'booking_draft';
   court_id: string;
@@ -53,7 +41,6 @@ export type ChatDraft = BookingDraft | CancelDraft;
 export type ChatPlayerRequest = {
   messages: ChatMessage[];
   user: ChatUser;
-  bookings: BookingSnapshot[];
 };
 export type ChatPlayerResponse = {
   text: string;
