@@ -1,6 +1,10 @@
+'use client';
+import { useEffect, useState } from 'react';
 import { RevenueBanner } from '@/components/owner/RevenueBanner';
 import { StatusBadge, Eyebrow } from '@/components/Tags';
 import { OWNER_BOOKINGS } from '@/lib/owner-mock-data';
+import { mlNoshowRiskBatch } from '@/lib/api-client';
+import type { NoShowRiskResult } from '@/lib/api-types';
 
 const STATUS_TO_VARIANT: Record<string, 'confirmed' | 'completed' | 'cancelled'> = {
   BOOKED: 'confirmed',
@@ -8,14 +12,34 @@ const STATUS_TO_VARIANT: Record<string, 'confirmed' | 'completed' | 'cancelled'>
   CANCELLED: 'cancelled',
 };
 
-const RISK_BY_SPORT: Record<string, { tier: string; cls: 'confirmed' | 'progress' | 'cancelled' }> = {
-  Padel:  { tier: 'Low',    cls: 'confirmed' },
-  Tennis: { tier: 'Medium', cls: 'progress' },
-  Soccer: { tier: 'High',   cls: 'cancelled' },
-  Yoga:   { tier: 'Low',    cls: 'confirmed' },
+const TIER_TO_VARIANT: Record<string, 'confirmed' | 'progress' | 'cancelled'> = {
+  Low: 'confirmed', Medium: 'progress', High: 'cancelled',
 };
 
+const SPORT_TO_DISTRICT: Record<string, string> = {
+  Padel: 'Sukhumvit', Tennis: 'Pathumwan', Soccer: 'Thong Lor', Yoga: 'Ari',
+};
+
+function parseHour(time: string): number {
+  const m = /^(\d{2}):/.exec(time);
+  return m ? parseInt(m[1], 10) : 18;
+}
+
 export default function BookingDashboardPage() {
+  const [risks, setRisks] = useState<NoShowRiskResult[] | null>(null);
+
+  useEffect(() => {
+    mlNoshowRiskBatch({
+      items: OWNER_BOOKINGS.map((b) => ({
+        sport: b.sport,
+        district: SPORT_TO_DISTRICT[b.sport] ?? 'Sukhumvit',
+        hour: parseHour(b.time),
+      })),
+    })
+      .then((res) => setRisks(res.results))
+      .catch(() => setRisks(null));
+  }, []);
+
   return (
     <div className="flex flex-col gap-5">
       <h1 className="font-display text-3xl font-bold">Bookings</h1>
@@ -49,8 +73,8 @@ export default function BookingDashboardPage() {
       </div>
 
       <div className="flex flex-col gap-2">
-        {OWNER_BOOKINGS.map((b) => {
-          const risk = RISK_BY_SPORT[b.sport] ?? { tier: 'Medium', cls: 'progress' as const };
+        {OWNER_BOOKINGS.map((b, i) => {
+          const risk = risks?.[i];
           return (
             <div key={b.member_id} className="zpots-card grid grid-cols-[2fr_2fr_1fr_1fr] gap-3 items-center p-3">
               <div className="flex items-center gap-3">
@@ -65,7 +89,13 @@ export default function BookingDashboardPage() {
                 <div className="text-xs text-zpots-muted">🕐 {b.time}</div>
               </div>
               <StatusBadge status={STATUS_TO_VARIANT[b.status] ?? 'confirmed'}>{b.status}</StatusBadge>
-              <StatusBadge status={risk.cls}>{risk.tier}</StatusBadge>
+              {risk ? (
+                <StatusBadge status={TIER_TO_VARIANT[risk.tier]}>
+                  {risk.tier} ({(risk.probability * 100).toFixed(0)}%)
+                </StatusBadge>
+              ) : (
+                <span className="text-xs text-zpots-muted">—</span>
+              )}
             </div>
           );
         })}
