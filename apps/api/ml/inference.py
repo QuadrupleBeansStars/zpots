@@ -6,9 +6,12 @@ from typing import Any
 import joblib
 import pandas as pd
 
-ML_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
-    "ml", "models",
+ML_DIR = os.environ.get(
+    "ZPOTS_ML_DIR",
+    os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
+        "ml", "models",
+    ),
 )
 DEMAND_PARQUET = os.path.join(ML_DIR, "demand_predictions.parquet")
 NOSHOW_PKL = os.path.join(ML_DIR, "noshow_rf.pkl")
